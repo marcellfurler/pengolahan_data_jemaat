@@ -153,8 +153,9 @@ const DetailJemaat = ({ data }) => {
         <h5 className="mb-0 fw-bold text-center flex-grow-1">BIODATA JEMAAT</h5>
 
         <Link
-            to={`/edit-jemaat/${data.nik}`}
-            className="btn btn-light btn-sm fw-bold text-primary position-absolute end-0 me-3"
+            to={`/edit`}
+            className="btn btn-light btn-sm fw-bold position-absolute end-0 me-3"
+            style={{color:"#004d97"}}
             title="Edit Data"
         >
             <FontAwesomeIcon icon={faPencilAlt} className="me-1" /> Edit
