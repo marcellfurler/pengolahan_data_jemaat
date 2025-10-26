@@ -3,31 +3,11 @@ import { Link } from "react-router-dom";
 
 import logoGKJ from './assets/logoGKJ.png';
 import backgroundimg2 from './assets/gkjwatesselatan2.png';
+import { NavbarComponentLogin } from './components/NavbarComponent';
+
 
 // Komponen Navbar
-const NavbarComponent = () => (
-  <header>
-    <nav className="navbar navbar-expand-lg navbar-lightt" style={{ height: '80px', backgroundColor: '#ecececff' }}>
-      <div className="container">
-        <a className="navbar-brand d-flex align-items-center" href="#" style={{ fontSize: '1.1rem', fontWeight: '600', color: '#004d99' }}>
-          <img
-            src={logoGKJ}
-            alt="Logo GKJ"
-            width="60"
-            height="60"
-            className="d-inline-block align-text-top rounded-circle me-3"
-            style={{ objectFit: 'cover' }}
-          />
-          <div>
-            <span className="d-block">GEREJA KRISTEN JAWA</span>
-            <span className="d-block">WATES SELATAN</span>
-          </div>
-        </a>
 
-      </div>
-    </nav>
-  </header>
-);
 
 // Komponen Form Login
 const LoginForm = () => {
@@ -106,7 +86,7 @@ const HalamanLogin = () => {
                 crossOrigin="anonymous" 
             />
 
-            <NavbarComponent />
+            <NavbarComponentLogin />
             
             {/* Konten Utama: Menggunakan flexbox untuk layout 100vh */}
             <div className="d-flex" style={{ height: 'calc(100vh - 80px)' }}>
