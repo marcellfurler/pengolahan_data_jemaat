@@ -43,7 +43,7 @@ export const NavbarComponent = () => (
         <div className="collapse navbar-collapse" id="navbarNavDropdown">
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
-              <Link className="lead nav-link active" aria-current="page" to="#" style={{ fontSize: '1.1rem' }}>Data</Link>
+              <Link className="lead nav-link active" aria-current="page" to="/data" style={{ fontSize: '1.1rem' }}>Data</Link>
             </li>
             <li className="nav-item">
               <Link className="nav-link" to="#" style={{ fontSize: '1.1rem' }}>Statistik</Link>

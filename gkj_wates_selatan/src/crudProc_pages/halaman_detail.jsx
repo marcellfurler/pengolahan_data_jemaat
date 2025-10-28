@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPencilAlt } from '@fortawesome/free-solid-svg-icons';
+import { faPencilAlt, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import logoGKJ from '../assets/logoGKJ.png';
 import { NavbarComponent } from '../components/NavbarComponent';
 
@@ -52,26 +52,37 @@ const DetailJemaat = ({ data }) => {
 
         {/* HEADER CARD */}
         <div
-        className="card-header text-white d-flex align-items-center justify-content-center position-relative"
-        style={{
+          className="card-header text-white d-flex align-items-center justify-content-center position-relative"
+          style={{
             backgroundColor: '#004d97',
             borderBottom: 'none',
             height: '60px',
             padding: '0 1rem',
-        }}
+          }}
         >
-        <h5 className="mb-0 fw-bold text-center flex-grow-1">BIODATA JEMAAT</h5>
+          {/* Tombol Kembali di kiri */}
+          <Link
+            to="/data"
+            className="btn btn-light btn-sm fw-bold position-absolute start-0 ms-3"
+            style={{ color: "#004d97" }}
+            title="Kembali"
+          >
+            <FontAwesomeIcon icon={faArrowLeft} className="me-1" /> Kembali
+          </Link>
 
-        <Link
+          {/* Judul Tengah */}
+          <h5 className="mb-0 fw-bold text-center flex-grow-1">BIODATA JEMAAT</h5>
+
+          {/* Tombol Edit di kanan */}
+          <Link
             to={`/edit`}
             className="btn btn-light btn-sm fw-bold position-absolute end-0 me-3"
-            style={{color:"#004d97"}}
+            style={{ color: "#004d97" }}
             title="Edit Data"
-        >
+          >
             <FontAwesomeIcon icon={faPencilAlt} className="me-1" /> Edit
-        </Link>
+          </Link>
         </div>
-
 
         {/* BODY CARD */}
         <div className="card-body p-0">
@@ -79,15 +90,15 @@ const DetailJemaat = ({ data }) => {
 
             {/* FOTO */}
             <div className="col-12 col-lg-4 p-4 border-end d-flex flex-column align-items-center bg-light">
-            <img
+              <img
                 src={data.foto || "https://placehold.co/150x150/004d99/ffffff?text=FOTO"}
                 alt="Foto Profil Jemaat"
                 className="img-fluid rounded-circle shadow mb-3"
                 style={{ width: '150px', height: '150px', objectFit: 'cover' }}
-            />
-            <h5 className="fw-bold text-primary mb-1">{data.nama || 'Nama Jemaat'}</h5>
-            <p className="text-muted small mb-0">{data.statusPelayanan || '-'}</p>
-            <p className="text-muted small">Pepanthan: {data.pepanthan || '-'}</p>
+              />
+              <h5 className="fw-bold text-primary mb-1">{data.nama || 'Nama Jemaat'}</h5>
+              <p className="text-muted small mb-0">{data.statusPelayanan || '-'}</p>
+              <p className="text-muted small">Pepanthan: {data.pepanthan || '-'}</p>
             </div>
 
             {/* DATA DETAIL */}
@@ -111,13 +122,6 @@ const DetailJemaat = ({ data }) => {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* TOMBOL KEMBALI */}
-      <div className="mt-4 text-center">
-        <Link to="/data" className="btn btn-outline-secondary">
-          &larr; Kembali ke Daftar Jemaat
-        </Link>
       </div>
     </div>
   );
