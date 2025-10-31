@@ -1,0 +1,16 @@
+@page {
+  size: A4;
+  margin: 0;
+}
+
+@media print {
+  body {
+    background: none !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+  #surat-baptis-anak {
+    box-shadow: none !important;
+    margin: 0;
+    border: none;
+  }
+}

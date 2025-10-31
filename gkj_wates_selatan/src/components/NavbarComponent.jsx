@@ -52,7 +52,7 @@ export const NavbarComponent = () => (
               <Link className="nav-link" to="/dataBaru" style={{ fontSize: '1.1rem' }}>Data Baru</Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to="#" style={{ fontSize: '1.1rem' }}>Surat</Link>
+              <Link className="nav-link" to="/surat" style={{ fontSize: '1.1rem' }}>Surat</Link>
             </li>
 
             <li className="nav-item dropdown">
