@@ -1,10 +1,11 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { NavbarComponent } from "./components/NavbarComponent";
 import { DaftarSuratJemaat } from "./components/daftarSuratJemaat";
 
-
 const HalamanSurat = () => {
+  const navigate = useNavigate();
+
   // Kelompok surat berdasarkan kategori
   const kelompokSurat = [
     {
@@ -13,7 +14,7 @@ const HalamanSurat = () => {
         { id: 1, nama: "Surat Permohonan Baptis Anak", path: "/surat/baptis-anak" },
         { id: 2, nama: "Surat Permohonan Baptis Dewasa", path: "/surat/baptis-dewasa" },
         { id: 3, nama: "Surat Permohonan Pertobatan", path: "/surat/pertobatan" },
-        { id: 4, nama: "Surat Pengakuan Percaya (Sidi)", path: "/surat/sidi" },
+        { id: 4, nama: "Surat Pengakuan Percaya (Sidi)", path: "/surat/pengakuan-percaya" },
       ],
     },
     {
@@ -36,18 +37,31 @@ const HalamanSurat = () => {
         { id: 9, nama: "Surat Kesanggupan Pencalonan Majelis", path: "/surat/calon-majelis" },
         { id: 10, nama: "Surat Atestasi Pindah Gereja", path: "/surat/atestasi" },
       ],
-    }
+    },
   ];
 
   return (
     <div>
       <NavbarComponent />
 
-      <div className="container mt-5">
+      <div className="container mt-5 mb-5">
         <div className="card shadow-lg">
-          {/* Header Card */}
-          <div className="card-header text-white text-center py-3" style={{ backgroundColor: "#004d97" }}>
-            <h4 className="mb-0">📄 Pembuatan Template Surat</h4>
+
+          {/* Header Card dengan Tombol Kembali di Kiri */}
+          <div
+            className="card-header text-white d-flex align-items-center justify-content-between mb-3 py-3"
+            style={{ backgroundColor: "#004d97" }}
+          >
+            <button
+              className="btn btn-light btn-sm"
+              onClick={() => navigate("/data")}
+            >
+              ← Kembali
+            </button>
+            <h4 className="mb-0 text-center flex-grow-1" style={{ color: "white" }}>
+              📄 Pembuatan Template Surat
+            </h4>
+            <div style={{ width: "80px" }}></div> {/* Spacer agar judul tetap di tengah */}
           </div>
 
           {/* Body Card */}
@@ -64,7 +78,7 @@ const HalamanSurat = () => {
                   role="tab"
                   aria-controls="nav-home"
                   aria-selected="true"
-                  style={{color:"#004d97"}}
+                  style={{ color: "#004d97" }}
                 >
                   Template Surat
                 </button>
@@ -90,7 +104,7 @@ const HalamanSurat = () => {
                   role="tab"
                   aria-controls="nav-lain"
                   aria-selected="false"
-                  style={{color:"#004d97"}}
+                  style={{ color: "#004d97" }}
                 >
                   Lainnya
                 </button>
@@ -109,7 +123,7 @@ const HalamanSurat = () => {
               >
                 {kelompokSurat.map((kelompok, index) => (
                   <div key={index} className="mb-4">
-                    <h5 className="fw-bold mb-3" style={{color:"#004d97"}}>
+                    <h5 className="fw-bold mb-3" style={{ color: "#004d97" }}>
                       {kelompok.kategori}
                     </h5>
                     <div className="table-responsive">
@@ -131,7 +145,7 @@ const HalamanSurat = () => {
                                   to={surat.path}
                                   className="btn btn-sm btn-outline-primary"
                                 >
-                                  Buka
+                                  Buat
                                 </Link>
                               </td>
                             </tr>

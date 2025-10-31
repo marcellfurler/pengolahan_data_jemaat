@@ -3,12 +3,12 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { NavbarComponent } from "../../../components/NavbarComponent";
 import html2pdf from "html2pdf.js";
 
-const SuratTemplateBaptisAnak = () => {
+const SuratTemplateBaptisDewasa = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const data = state || {};
 
-  // ✅ Format tanggal ke Indonesia: 1 November 2025
+  // ✅ Format tanggal ke format Indonesia: 1 November 2025
   const formatTanggalIndonesia = (tanggal) => {
     if (!tanggal) return "..................";
     const date = new Date(tanggal);
@@ -16,14 +16,14 @@ const SuratTemplateBaptisAnak = () => {
     return date.toLocaleDateString("id-ID", options);
   };
 
-  // ✅ Print hanya elemen surat
+  // ✅ Cetak hanya isi surat (tanpa navbar & tombol)
   const handlePrint = () => {
-    const printContents = document.getElementById("surat-baptis-anak").innerHTML;
+    const printContents = document.getElementById("surat-baptis-dewasa").innerHTML;
     const printWindow = window.open("", "_blank");
     printWindow.document.write(`
       <html>
         <head>
-          <title>Surat Permohonan Baptis Anak</title>
+          <title>Surat Permohonan Baptis Dewasa</title>
           <style>
             body {
               font-family: 'Times New Roman', serif;
@@ -31,6 +31,7 @@ const SuratTemplateBaptisAnak = () => {
               line-height: 1.3;
               margin: 0;
               padding: 0;
+              color: #000;
             }
             @page {
               size: A4;
@@ -48,10 +49,10 @@ const SuratTemplateBaptisAnak = () => {
 
   // ✅ Download ke PDF
   const handleDownload = () => {
-    const element = document.getElementById("surat-baptis-anak");
+    const element = document.getElementById("surat-baptis-dewasa");
     const opt = {
       margin: 0,
-      filename: `Surat_Permohonan_Baptis_${data.namaAnak || "Anak"}.pdf`,
+      filename: `Surat_Permohonan_Baptis_Dewasa_${data.nama || "Jemaat"}.pdf`,
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
@@ -63,7 +64,7 @@ const SuratTemplateBaptisAnak = () => {
     <div>
       <NavbarComponent />
 
-      {/* Tombol Aksi */}
+      {/* Tombol Navigasi & Aksi */}
       <div className="d-flex justify-content-between align-items-center px-4 mt-4 mb-3 no-print">
         <button className="btn btn-secondary" onClick={() => navigate(-1)}>
           ← Kembali
@@ -78,7 +79,7 @@ const SuratTemplateBaptisAnak = () => {
         </div>
       </div>
 
-      {/* === SURAT (A4 tampilan tunggal) === */}
+      {/* === SURAT === */}
       <div
         style={{
           display: "flex",
@@ -88,7 +89,7 @@ const SuratTemplateBaptisAnak = () => {
         }}
       >
         <div
-          id="surat-baptis-anak"
+          id="surat-baptis-dewasa"
           style={{
             width: "210mm",
             height: "297mm",
@@ -103,9 +104,9 @@ const SuratTemplateBaptisAnak = () => {
             boxShadow: "0 0 6px rgba(0,0,0,0.25)",
           }}
         >
-          {/* === Header Surat === */}
+          {/* === Header === */}
           <div style={{ textAlign: "right", fontWeight: "bold", fontSize: "11pt" }}>
-            KODE : SPP.Bts ANAK
+            KODE : SPP.Bts DEWASA
           </div>
 
           <h5
@@ -116,7 +117,7 @@ const SuratTemplateBaptisAnak = () => {
               marginTop: "5px",
             }}
           >
-            SURAT PERMOHONAN PELAYANAN BAPTIS ANAK
+            SURAT PERMOHONAN PELAYANAN PENGAKUAN PERCAYA DAN BAPTIS DEWASA
           </h5>
 
           <p style={{ marginTop: "15px" }}>
@@ -128,14 +129,30 @@ const SuratTemplateBaptisAnak = () => {
           <p>Salam Damai Dalam Kasih Tuhan Yesus Kristus,</p>
 
           <p>
-            Dengan penuh pengharapan akan kasih dan anugerah dari Tuhan Yesus
-            Kristus, melalui surat ini perkenankanlah kami :
+            Dengan penuh pengharapan dan percaya akan anugerah keselamatan dari
+            Tuhan Yesus Kristus, maka melalui surat ini perkenankanlah saya :
           </p>
 
+          {/* === Data Jemaat === */}
           <table style={{ width: "100%", marginTop: "10px" }}>
             <tbody>
               <tr>
-                <td style={{ width: "30%" }}>Nama Orang Tua</td>
+                <td style={{ width: "35%" }}>Nama</td>
+                <td>: {data.nama || "................................................"}</td>
+              </tr>
+              <tr>
+                <td>Tempat, Tgl Lahir</td>
+                <td>
+                  : {data.tempatLahir || ".................."},{" "}
+                  {formatTanggalIndonesia(data.tanggalLahir)}
+                </td>
+              </tr>
+              <tr>
+                <td>Alamat</td>
+                <td>: {data.alamat || "................................................"}</td>
+              </tr>
+              <tr>
+                <td>Nama Orang Tua</td>
               </tr>
               <tr>
                 <td>    Ayah</td>
@@ -146,45 +163,28 @@ const SuratTemplateBaptisAnak = () => {
                 <td>: {data.namaIbu || "................................................"}</td>
               </tr>
               <tr>
-                <td>Alamat</td>
-                <td>: {data.alamat || "................................................"}</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <p style={{ marginTop: "15px" }}>
-            Memohon kepada Yang Terhormat Majelis GKJ Wates Selatan, agar berkenan
-            memberikan pelayanan Baptis Anak, untuk anak kami :
-          </p>
-
-          <table style={{ width: "100%", marginTop: "10px" }}>
-            <tbody>
-              <tr>
-                <td style={{ width: "30%" }}>Nama Anak</td>
-                <td>: {data.namaAnak || "................................................"}</td>
+                <td>Nama Istri / Suami</td>
+                <td>: {data.namaPasangan || "................................................"}</td>
               </tr>
               <tr>
-                <td>Jenis Kelamin</td>
-                <td>: {data.jenisKelamin || "( Laki-laki / Perempuan )"}</td>
-              </tr>
-              <tr>
-                <td>Tempat, Tgl Lahir</td>
+                <td>Tempat, Tgl Nikah</td>
                 <td>
-                  : {data.tempatLahir || ".................."},{" "}
-                  {formatTanggalIndonesia(data.tanggalLahir)}
+                  : {data.tempatNikah || ".................."},{" "}
+                  {formatTanggalIndonesia(data.tanggalNikah)}
                 </td>
               </tr>
             </tbody>
           </table>
 
           <p style={{ marginTop: "15px" }}>
-            Pelayanan Baptis Anak diharapkan dapat dilayankan pada:
+            Memohon kepada Yang Terhormat Majelis GKJ Wates Selatan, agar
+            berkenan memberikan pelayanan Pengakuan Percaya dan Baptis Dewasa.
           </p>
 
           <table style={{ width: "100%", marginTop: "10px" }}>
             <tbody>
               <tr>
-                <td style={{ width: "30%" }}>Hari / Tanggal</td>
+                <td style={{ width: "35%" }}>Hari / Tanggal</td>
                 <td>
                   : {data.hariPelayanan || ".................."},{" "}
                   {formatTanggalIndonesia(data.tanggalPelayanan)}
@@ -201,20 +201,27 @@ const SuratTemplateBaptisAnak = () => {
             </tbody>
           </table>
 
-          <p style={{ marginTop: "20px" }}>
-            Demikian surat permohonan pelayanan baptis anak kami, atas
-            perkenannya permohonan ini, kami ucapkan terima kasih, dan kiranya
-            Tuhan selalu memberkati kita sekalian. <br />Amin
+          <p style={{ marginTop: "15px" }}>
+            Selanjutnya perlu Yang Terhormat Majelis GKJ Wates Selatan ketahui,
+            bahwa untuk keperluan tersebut saya telah menyelesaikan program
+            katekisasi di bawah bimbingan {data.pembimbing || "................................................"}.
+          </p>
+
+          <p>
+            Demikian surat permohonan pelayanan Pengakuan Percaya dan Baptis
+            Dewasa saya, atas perkenannya permohonan ini, saya ucapkan terima
+            kasih. Kiranya Tuhan memberkati kita sekalian. <br />Amin.
           </p>
 
           {/* === Tanda Tangan === */}
           <div style={{ textAlign: "center", marginTop: "40px" }}>
             <p>
-              Kulon Progo, Yogyakarta, {formatTanggalIndonesia(new Date())} <br />
+              Kulon Progo, {formatTanggalIndonesia(new Date())} <br />
               Teriring Salam dan Hormat
             </p>
-            <br />
+            
 
+            {/* Tabel tanda tangan tengah */}
             <div
               style={{
                 display: "flex",
@@ -226,17 +233,29 @@ const SuratTemplateBaptisAnak = () => {
               }}
             >
               <div>
-                <div style={{ borderBottom: "1px solid #000", minWidth: "150px", paddingBottom: "3px" }}>
-                  {data.namaAyah || "........................"}
+                <div
+                  style={{
+                    borderBottom: "1px solid #000",
+                    minWidth: "150px",
+                    paddingBottom: "3px",
+                  }}
+                >
+                  {data.pembimbing || "........................"}
                 </div>
-                <div style={{ marginTop: "5px" }}>Suami</div>
+                <div style={{ marginTop: "5px" }}>Pembimbing Katekisasi</div>
               </div>
 
               <div>
-                <div style={{ borderBottom: "1px solid #000", minWidth: "150px", paddingBottom: "3px" }}>
-                  {data.namaIbu || "........................"}
+                <div
+                  style={{
+                    borderBottom: "1px solid #000",
+                    minWidth: "150px",
+                    paddingBottom: "3px",
+                  }}
+                >
+                  {data.nama || "........................"}
                 </div>
-                <div style={{ marginTop: "5px" }}>Istri</div>
+                <div style={{ marginTop: "5px" }}>Pemohon</div>
               </div>
             </div>
           </div>
@@ -246,4 +265,4 @@ const SuratTemplateBaptisAnak = () => {
   );
 };
 
-export default SuratTemplateBaptisAnak;
+export default SuratTemplateBaptisDewasa;
