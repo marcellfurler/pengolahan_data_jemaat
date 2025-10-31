@@ -39,7 +39,7 @@ const FormPermohonanPertobatan = () => {
       <div className="container mt-5 mb-5">
         <div className="card shadow-lg">
           <div
-            className="card-header text-white d-flex justify-content-between align-items-center"
+            className="card-header text-white d-flex justify-content-between align-items-center py-3 px-4"
             style={{ backgroundColor: "#004d97" }}
           >
             <button

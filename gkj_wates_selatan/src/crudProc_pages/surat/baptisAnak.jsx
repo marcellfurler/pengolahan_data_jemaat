@@ -37,7 +37,7 @@ const BaptisAnak = () => {
         <div className="card shadow-lg">
           {/* Header Card dengan tombol kembali */}
           <div
-            className="card-header d-flex align-items-center justify-content-between text-white py-3"
+            className="card-header d-flex align-items-center justify-content-between text-white py-3 px-4"
             style={{ backgroundColor: "#004d97" }}
           >
             {/* Tombol Kembali */}

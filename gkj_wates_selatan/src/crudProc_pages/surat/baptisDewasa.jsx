@@ -38,7 +38,7 @@ const BaptisDewasa = () => {
       <div className="container mt-5 mb-5">
         <div className="card shadow-lg">
           <div
-            className="card-header d-flex align-items-center justify-content-between text-white py-3"
+            className="card-header d-flex align-items-center justify-content-between text-white px-4 py-3"
             style={{ backgroundColor: "#004d97" }}
           >
             <button
