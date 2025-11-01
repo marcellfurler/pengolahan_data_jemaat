@@ -101,12 +101,14 @@ const SuratTemplateBaptisAnak = () => {
             color: "#000",
             boxSizing: "border-box",
             boxShadow: "0 0 6px rgba(0,0,0,0.25)",
+            textAlign: "justify",
           }}
         >
           {/* === Header Surat === */}
           <div style={{ textAlign: "right", fontWeight: "bold", fontSize: "11pt" }}>
             KODE : SPP.Bts ANAK
           </div>
+          
 
           <h5
             style={{
@@ -118,6 +120,7 @@ const SuratTemplateBaptisAnak = () => {
           >
             SURAT PERMOHONAN PELAYANAN BAPTIS ANAK
           </h5>
+          
 
           <p style={{ marginTop: "15px" }}>
             Kepada : <br />

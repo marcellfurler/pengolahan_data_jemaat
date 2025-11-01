@@ -18,7 +18,7 @@ import { NavbarComponent } from './components/NavbarComponent';
 
 // --- Komponen Tabel Data Jemaat ---
 const TabelDataJemaat = () => (
-  <div className="container-fluid mt-4 mb-5 px-4">
+  <div className="container-fluid mt-5 mb-5 px-4">
     <div className="card border-0">
       <div className="card-body p-0">
         <div className="table-responsive">

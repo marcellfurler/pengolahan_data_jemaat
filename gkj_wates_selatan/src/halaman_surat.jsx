@@ -20,7 +20,7 @@ const HalamanSurat = () => {
     {
       kategori: "Peristiwa Kehidupan Jemaat",
       surat: [
-        { id: 5, nama: "Surat Pemberitahuan Kelahiran", path: "/surat/kelahiran" },
+        { id: 5, nama: "Surat Pemberitahuan Kelahiran", path: "/surat/pemberitahuan-kelahiran" },
         { id: 6, nama: "Surat Berita Acara Pertunangan", path: "/surat/tunangan" },
         { id: 7, nama: "Surat Permohonan Pemberkatan Nikah", path: "/surat/nikah" },
       ],

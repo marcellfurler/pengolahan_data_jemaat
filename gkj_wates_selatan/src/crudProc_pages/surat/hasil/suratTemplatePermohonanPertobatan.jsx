@@ -18,34 +18,57 @@ const SuratTemplatePertobatan = () => {
 
   const handleDownload = () => {
     const element = document.getElementById("surat-pertobatan");
+
+    // Tambahkan wrapper .page agar html2pdf tahu page-break
+    const pages = document.createElement("div");
+    pages.innerHTML = `<div class="page">${element.innerHTML}</div>`;
+
+    // Optional: copy style dari element asli
+    pages.style.fontFamily = "Times New Roman, serif";
+    pages.style.fontSize = "12pt";
+    pages.style.lineHeight = "1.4";
+
     const opt = {
-      margin: 0,
-      filename: `Surat_Permohonan_Pertobatan_${data.nama || "Jemaat"}.pdf`,
+      margin: [20, 20, 20, 20], // top, left, bottom, right dalam mm
+      filename: `Surat_Pertobatan_${data.nama || "Jemaat"}.pdf`,
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      pagebreak: { mode: ["css", "legacy"] }, // biar page break di CSS berfungsi
     };
-    html2pdf().from(element).set(opt).save();
+
+    html2pdf().from(pages).set(opt).save();
   };
 
-  const handlePrint = () => {
+
+    const handlePrint = () => {
     const printContent = document.getElementById("surat-pertobatan").innerHTML;
     const printWindow = window.open("", "_blank");
     printWindow.document.write(`
-      <html>
+        <html>
         <head>
-          <title>Surat Permohonan Pertobatan</title>
-          <style>
-            body { font-family: 'Times New Roman', serif; font-size: 12pt; color: #000; line-height: 1.4; margin: 0; padding: 0; }
-            #surat { width: 210mm; height: 297mm; margin: auto; padding: 25mm 20mm; box-sizing: border-box; }
-          </style>
+            <title>Surat Pertobatan</title>
+            <style>
+            @media print {
+                @page { size: A4; margin: 20mm; }
+                body { margin: 0; padding: 0; font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.4; }
+                .page { page-break-after: always; width: 100%; box-sizing: border-box; }
+                .page:last-child { page-break-after: auto; }
+            }
+            </style>
         </head>
-        <body><div id="surat">${printContent}</div></body>
-      </html>
+        <body>
+            <div class="page">${printContent}</div>
+        </body>
+        </html>
     `);
     printWindow.document.close();
-    printWindow.print();
-  };
+    printWindow.focus();
+    setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+    }, 500);
+    };
 
   return (
     <div>
@@ -87,6 +110,7 @@ const SuratTemplatePertobatan = () => {
             color: "#000",
             boxSizing: "border-box",
             boxShadow: "0 0 6px rgba(0,0,0,0.25)",
+            textAlign: "justify",
           }}
         >
           {/* === Header === */}
@@ -104,19 +128,18 @@ const SuratTemplatePertobatan = () => {
           >
             SURAT PERMOHONAN PELAYANAN PERTOBATAN
           </h5>
-
+          
           <p style={{ marginTop: "15px" }}>
             Kepada : <br />
             Yth. Majelis Gereja Kristen Jawa Wates Selatan <br />
             Di Dusun II, Depok, Panjatan, Kulon Progo, Yogyakarta.
           </p>
 
-          <p>Salam Damai Dalam Kasih Tuhan Yesus Kristus,</p>
-
-          <p>
+          <p>Salam Damai Dalam Kasih Tuhan Yesus Kristus, <br />
             Dengan segala kerendahan di hadapan Tuhan Yesus Kristus Sang Juru
             Selamat, maka melalui surat ini perkenankanlah saya:
           </p>
+
 
           <table style={{ width: "100%", marginTop: "10px" }}>
             <tbody>
@@ -160,19 +183,13 @@ const SuratTemplatePertobatan = () => {
             </tbody>
           </table>
 
-          <p style={{ marginTop: "15px" }}>
+          <p style={{ marginTop: "15px", textAlign: "justify" }}>
             Saya menyadari dengan sesungguhnya, bahwa saya telah berdosa di
             hadapan Tuhan. Saya menyesali segala dosa dan menyatakan pertobatan
-            di hadapan Tuhan dan Majelis serta Jemaat di sini.
-          </p>
-
-          <p>
+            di hadapan Tuhan dan Majelis serta Jemaat di sini. <br />
             Saya berjanji akan berusaha sekuat tenaga dengan tetap percaya,
             berserah, dan berharap pada pertolongan Roh Kudus untuk dapat
-            melakukan semua yang baik dan berkenan di hadapan Tuhan.
-          </p>
-
-          <p>
+            melakukan semua yang baik dan berkenan di hadapan Tuhan. <br />
             Sehubungan dengan hal tersebut perkenankan saya memohon kepada Yang
             Terhormat Majelis GKJ Wates Selatan, agar berkenan memberikan
             pelayanan Pertobatan atas diri saya, yang diharapkan dapat
@@ -199,10 +216,10 @@ const SuratTemplatePertobatan = () => {
             </tbody>
           </table>
 
-          <p style={{ marginTop: "20px" }}>
+          <p style={{ marginTop: "20px", textAlign: "justify" }}>
             Demikian surat permohonan pelayanan Pertobatan ini, atas
             perkenannya permohonan ini saya ucapkan terima kasih, dan semoga
-            Tuhan selalu memberkati kita sekalian. <br />Amin
+            Tuhan selalu memberkati kita sekalian. Amin
           </p>
 
           {/* === Tanda Tangan === */}

@@ -15,29 +15,60 @@ const SuratTemplatePengakuanPercaya = () => {
     return date.toLocaleDateString("id-ID", options);
   };
 
-  // === PRINT hanya bagian surat ===
-  const handlePrint = () => {
-    const printContents = document.getElementById("surat-pengakuan-percaya").innerHTML;
-    const originalContents = document.body.innerHTML;
-    document.body.innerHTML = printContents;
-    window.print();
-    document.body.innerHTML = originalContents;
-    window.location.reload();
-  };
-
-  // === DOWNLOAD PDF ===
-  const handleDownload = () => {
-    const element = document.getElementById("surat-pengakuan-percaya");
-    const opt = {
-      margin: 0,
-      filename: `Surat_Pengakuan_Percaya_${data.nama || "Jemaat"}.pdf`,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+  // ✅ Cetak hanya isi surat (tanpa navbar & tombol)
+    const handlePrint = () => {
+    const printContent = document.getElementById("surat-pengakuan-percaya").innerHTML;
+    const printWindow = window.open("", "_blank");
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Surat Pengakuan Percaya</title>
+            <style>
+            @media print {
+                @page { size: A4; margin: 20mm; }
+                body { margin: 0; padding: 0; font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.4; }
+                .page { page-break-after: always; width: 100%; box-sizing: border-box; }
+                .page:last-child { page-break-after: auto; }
+            }
+            </style>
+        </head>
+        <body>
+            <div class="page">${printContent}</div>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+    }, 500);
     };
-    html2pdf().from(element).set(opt).save();
-  };
 
+  // ✅ Download ke PDF
+    const handleDownload = () => {
+    const element = document.getElementById("surat-pengakuan-percaya");
+
+    // Tambahkan wrapper .page agar html2pdf tahu page-break
+    const pages = document.createElement("div");
+    pages.innerHTML = `<div class="page">${element.innerHTML}</div>`;
+
+    // Optional: copy style dari element asliaa
+    pages.style.fontFamily = "Times New Roman, serif";
+    pages.style.fontSize = "12pt";
+    pages.style.lineHeight = "1.4";
+
+    const opt = {
+        margin: [20, 20, 20, 20], // top, left, bottom, right dalam mm
+        filename: `Surat_Pengakuan_Percaya_${data.nama || "Jemaat"}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        pagebreak: { mode: ["css", "legacy"] }, // biar page break di CSS berfungsi
+    };
+
+    html2pdf().from(pages).set(opt).save();
+    };
   return (
     <div>
       <NavbarComponent />
@@ -80,6 +111,7 @@ const SuratTemplatePengakuanPercaya = () => {
             color: "#000",
             boxSizing: "border-box",
             boxShadow: "0 0 6px rgba(0,0,0,0.25)",
+            textAlign: "justify",
           }}
         >
           {/* === Header === */}
@@ -104,11 +136,13 @@ const SuratTemplatePengakuanPercaya = () => {
             Di Dusun II, Depok, Panjatan, Kulon Progo, Yogyakarta.
           </p>
 
-          <p>Salam Damai Dalam Kasih Tuhan Yesus Kristus,</p>
-
-          <p>
+          <p>Salam Damai Dalam Kasih Tuhan Yesus Kristus, <br />
             Dengan penuh pengharapan dan percaya akan anugerah keselamatan dari Tuhan
             Yesus Kristus, maka melalui surat ini perkenankanlah saya:
+          </p>
+
+          <p>
+            
           </p>
 
           <table style={{ width: "100%", marginTop: "10px" }}>
@@ -147,7 +181,7 @@ const SuratTemplatePengakuanPercaya = () => {
           <p>
             Demikian surat permohonan pelayanan Pengakuan Percaya (SIDI) saya, atas
             perkenannya permohonan ini, saya ucapkan terima kasih. Kiranya Tuhan
-            memberkati kita sekalian. <br />Amin.
+            memberkati kita sekalian. Amin.
           </p>
 
           {/* === Tanda tangan === */}

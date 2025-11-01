@@ -14,3 +14,27 @@
     border: none;
   }
 }
+@media print {
+  @page {
+    size: A4;
+    margin: 20mm; /* batas atas/bawah/kiri/kanan */
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Times New Roman', serif;
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+
+  .page {
+    page-break-after: always; /* setiap div.page akan otomatis pindah halaman */
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .page:last-child {
+    page-break-after: auto; /* halaman terakhir tidak perlu break */
+  }
+}
