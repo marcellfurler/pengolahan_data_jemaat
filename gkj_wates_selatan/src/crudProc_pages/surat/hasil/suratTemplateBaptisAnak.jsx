@@ -31,6 +31,7 @@ const SuratTemplateBaptisAnak = () => {
               line-height: 1.3;
               margin: 0;
               padding: 0;
+              text-align: justify;
             }
             @page {
               size: A4;
@@ -110,7 +111,7 @@ const SuratTemplateBaptisAnak = () => {
           </div>
           
 
-          <h5
+          <p
             style={{
               textAlign: "center",
               textDecoration: "underline",
@@ -119,7 +120,7 @@ const SuratTemplateBaptisAnak = () => {
             }}
           >
             SURAT PERMOHONAN PELAYANAN BAPTIS ANAK
-          </h5>
+          </p>
           
 
           <p style={{ marginTop: "15px" }}>

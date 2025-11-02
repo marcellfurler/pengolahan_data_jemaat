@@ -30,8 +30,15 @@ import SuratTemplatePemberitahuanKelahiran from './crudProc_pages/surat/hasil/su
 import Pertunangan from './crudProc_pages/surat/pertunangan'
 import SuratTemplatePertunangan from './crudProc_pages/surat/hasil/suratTemplatePertunangan'
 
-// import Pernikahan from './crudProc_pages/surat/pernikahan'
-// import SuratTemplatePernikahan from './crudProc_pages/surat/hasil/suratTemplatePernikahan'
+import Pernikahan from './crudProc_pages/surat/pernikahan'
+import SuratTemplatePernikahan from './crudProc_pages/surat/hasil/suratTemplatePernikahan'
+
+import BimbinganKatekesasi from './crudProc_pages/surat/bimbinganKatekesasi'
+import SuratTemplateBimbinganKatekesasi from './crudProc_pages/surat/hasil/suratTemplateBimbinganKatekesasi'
+
+import PencalonanMajelis from './crudProc_pages/surat/pencalonanMajelis'
+import SuratTemplatePencalonanMajelis from './crudProc_pages/surat/hasil/suratTemplatePencalonanMajelis'
+
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 
@@ -67,8 +74,14 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/surat/tunangan" element={<Pertunangan />} />
         <Route path="/surat/hasil/tunangan" element={<SuratTemplatePertunangan />} />
 
-        {/* <Route path="/surat/nikah" element={<Pernikahan />} />
-        <Route path="/surat/hasil/nikah" element={<SuratTemplatePernikahan />} /> */}
+        <Route path="/surat/nikah" element={<Pernikahan />} />
+        <Route path="/surat/hasil/nikah" element={<SuratTemplatePernikahan />} />
+
+        <Route path="/surat/katekisasi" element={<BimbinganKatekesasi />} />
+        <Route path="/surat/hasil/katekisasi" element={<SuratTemplateBimbinganKatekesasi />} />
+
+        <Route path="/surat/calon-majelis" element={<PencalonanMajelis />} />
+        <Route path="/surat/hasil/calon-majelis" element={<SuratTemplatePencalonanMajelis />} />
 
       </Routes>
     </BrowserRouter>

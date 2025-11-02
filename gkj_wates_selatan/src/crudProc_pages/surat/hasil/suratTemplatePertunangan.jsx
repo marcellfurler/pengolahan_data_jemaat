@@ -27,7 +27,7 @@ const SuratTemplatePertunangan = () => {
             <style>
             @media print {
                 @page { size: A4; margin: 20mm; }
-                body { margin: 0; padding: 0; font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.4; }
+                body { margin: 0; padding: 0; font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.4; text-align: justify;}
                 .page { page-break-after: always; width: 100%; box-sizing: border-box; }
                 .page:last-child { page-break-after: auto; }
             }
@@ -118,7 +118,7 @@ const SuratTemplatePertunangan = () => {
           <div style={{ textAlign: "right", fontWeight: "bold", fontSize: "11pt" }}>
             KODE : SBA.TUNANGAN
           </div>
-          <h5
+          <p
             style={{
               textAlign: "center",
               textDecoration: "underline",
@@ -127,7 +127,7 @@ const SuratTemplatePertunangan = () => {
             }}
           >
             SURAT PERMOHONAN PELAYANAN PERTOBATAN
-          </h5><br />
+          </p><br />
 
           <p style={{ textAlign: "justify" }}>
             Salam Damai Dalam Kasih Tuhan Yesus Kristus, <br />

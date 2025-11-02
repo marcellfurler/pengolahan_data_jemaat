@@ -27,7 +27,7 @@ const SuratTemplatePemberitahuanKelahiran = () => {
             <style>
             @media print {
                 @page { size: A4; margin: 20mm; }
-                body { margin: 0; padding: 0; font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.4; }
+                body { margin: 0; padding: 0; font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.4; text-align: justify; }
                 .page { page-break-after: always; width: 100%; box-sizing: border-box; }
                 .page:last-child { page-break-after: auto; }
             }
@@ -121,7 +121,7 @@ const SuratTemplatePemberitahuanKelahiran = () => {
           </div>
           
 
-          <h5
+          <p
             style={{
               textAlign: "center",
               textDecoration: "underline",
@@ -130,7 +130,7 @@ const SuratTemplatePemberitahuanKelahiran = () => {
             }}
           >
             SURAT PEMBERITAHUAN KELAHIRAN
-          </h5>
+          </p>
           
 
           <p>
