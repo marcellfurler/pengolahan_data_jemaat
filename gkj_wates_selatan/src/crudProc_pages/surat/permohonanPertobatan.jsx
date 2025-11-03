@@ -58,7 +58,7 @@ const FormPermohonanPertobatan = () => {
             <form onSubmit={handleSubmit}>
               <div className="row">
                 {/* === Identitas Diri === */}
-                <div className="col-md-6 mb-3">
+                <div className="col-md-12 mb-3">
                   <label className="form-label">Nama Lengkap</label>
                   <input
                     type="text"
@@ -70,7 +70,7 @@ const FormPermohonanPertobatan = () => {
                   />
                 </div>
 
-                <div className="col-md-3 mb-3">
+                <div className="col-md-6 mb-3">
                   <label className="form-label">Tempat Lahir</label>
                   <input
                     type="text"
@@ -81,7 +81,7 @@ const FormPermohonanPertobatan = () => {
                   />
                 </div>
 
-                <div className="col-md-3 mb-3">
+                <div className="col-md-6 mb-3">
                   <label className="form-label">Tanggal Lahir</label>
                   <input
                     type="date"
@@ -92,15 +92,15 @@ const FormPermohonanPertobatan = () => {
                   />
                 </div>
 
-                <div className="col-md-12 mb-3">
+                <div className="col-md-6 mb-3">
                   <label className="form-label">Alamat</label>
-                  <textarea
+                  <input
                     name="alamat"
                     className="form-control"
                     rows="2"
                     value={formData.alamat}
                     onChange={handleChange}
-                  ></textarea>
+                  ></input>
                 </div>
 
                 <div className="col-md-6 mb-3">
@@ -200,7 +200,7 @@ const FormPermohonanPertobatan = () => {
                 <div className="col-md-4 mb-3">
                   <label className="form-label">Waktu / Pukul</label>
                   <input
-                    type="text"
+                    type="time"
                     name="waktuPelayanan"
                     className="form-control"
                     value={formData.waktuPelayanan}

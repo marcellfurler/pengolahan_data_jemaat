@@ -46,29 +46,6 @@ const SuratTemplatePengakuanPercaya = () => {
     };
 
   // ✅ Download ke PDF
-    const handleDownload = () => {
-    const element = document.getElementById("surat-pengakuan-percaya");
-
-    // Tambahkan wrapper .page agar html2pdf tahu page-break
-    const pages = document.createElement("div");
-    pages.innerHTML = `<div class="page">${element.innerHTML}</div>`;
-
-    // Optional: copy style dari element asliaa
-    pages.style.fontFamily = "Times New Roman, serif";
-    pages.style.fontSize = "12pt";
-    pages.style.lineHeight = "1.4";
-
-    const opt = {
-        margin: [20, 20, 20, 20], // top, left, bottom, right dalam mm
-        filename: `Surat_Pengakuan_Percaya_${data.nama || "Jemaat"}.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        pagebreak: { mode: ["css", "legacy"] }, // biar page break di CSS berfungsi
-    };
-
-    html2pdf().from(pages).set(opt).save();
-    };
     
   return (
     <div>
@@ -80,9 +57,6 @@ const SuratTemplatePengakuanPercaya = () => {
           ← Kembali
         </button>
         <div>
-          <button className="btn btn-outline-primary me-2" onClick={handleDownload}>
-            💾 Download
-          </button>
           <button className="btn btn-primary" onClick={handlePrint}>
             🖨️ Print
           </button>
@@ -175,8 +149,8 @@ const SuratTemplatePengakuanPercaya = () => {
           <p style={{ marginTop: "15px" }}>
             Selanjutnya perlu Yang Terhormat Majelis GKJ Wates Selatan ketahui, bahwa
             untuk keperluan tersebut saya telah menyelesaikan program katekisasi di bawah
-            bimbingan {data.pembimbing || "................................................"}{" "}
-            yang telah berlangsung selama {data.durasiKatekisasi || ".................."}.
+            bimbingan <strong>{data.pembimbing || "................................................"}</strong>{" "}
+            yang telah berlangsung selama <strong>{data.durasiKatekisasi || ".................."}</strong>.
           </p>
 
           <p>
@@ -186,31 +160,47 @@ const SuratTemplatePengakuanPercaya = () => {
           </p>
 
           {/* === Tanda tangan === */}
-          <div style={{ textAlign: "center", marginTop: "30px" }}>
+          <div style={{ textAlign: "center", marginTop: "40px" }}>
             <p>
               Kulon Progo, {formatTanggalIndonesia(new Date())} <br />
               Teriring Salam dan Hormat
             </p>
-            <br /><br /><br />
-            <table
+            <br />
+            <div
               style={{
-                width: "80%",
-                marginLeft: "auto",
-                marginRight: "auto",
+                display: "flex",
+                justifyContent: "center",
+                gap: "100px",
+                marginTop: "40px",
                 textAlign: "center",
               }}
             >
-              <tbody>
-                <tr>
-                  <td>......................................</td>
-                  <td>......................................</td>
-                </tr>
-                <tr>
-                  <td>Pembimbing Katekisasi</td>
-                  <td>Pemohon</td>
-                </tr>
-              </tbody>
-            </table>
+              <div>
+                <div
+                  style={{
+                    borderBottom: "1px solid #000",
+                    minWidth: "150px",
+                    paddingBottom: "3px",
+                  }}
+                >
+                  {data.pembimbing || "........................"}
+                </div>
+                <div style={{ marginTop: "5px" }}>Pembimbing Katekesasi</div>
+              </div>
+
+              <div>
+                <div
+                  style={{
+                    borderBottom: "1px solid #000",
+                    minWidth: "150px",
+                    paddingBottom: "3px",
+                  }}
+                >
+                  {data.nama || "........................"}
+                </div>
+                <div style={{ marginTop: "5px" }}>Pemohon</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

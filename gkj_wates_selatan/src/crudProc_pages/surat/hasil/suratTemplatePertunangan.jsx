@@ -45,30 +45,6 @@ const SuratTemplatePertunangan = () => {
         printWindow.close();
     }, 500);
     };
-  // Download PDF
-    const handleDownload = () => {
-    const element = document.getElementById("surat-pertunangan");
-
-    // Tambahkan wrapper .page agar html2pdf tahu page-break
-    const pages = document.createElement("div");
-    pages.innerHTML = `<div class="page">${element.innerHTML}</div>`;
-
-    // Optional: copy style dari element asli
-    pages.style.fontFamily = "Times New Roman, serif";
-    pages.style.fontSize = "12pt";
-    pages.style.lineHeight = "1.4";
-
-    const opt = {
-        margin: [20, 20, 20, 20], // top, left, bottom, right dalam mm
-        filename: `Surat_Pertunangan_${data.nama || "Jemaat"}.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        pagebreak: { mode: ["css", "legacy"] }, // biar page break di CSS berfungsi
-    };
-
-    html2pdf().from(pages).set(opt).save();
-    };
 
   return (
     <div>
@@ -80,9 +56,6 @@ const SuratTemplatePertunangan = () => {
           ← Kembali
         </button>
         <div>
-          <button className="btn btn-outline-primary me-2" onClick={handleDownload}>
-            💾 Download
-          </button>
           <button className="btn btn-primary" onClick={handlePrint}>
             🖨️ Print
           </button>

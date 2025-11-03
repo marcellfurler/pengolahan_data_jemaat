@@ -16,28 +16,6 @@ const SuratTemplateBimbinganKatekisasi = () => {
     return date.toLocaleDateString("id-ID", options);
   };
 
-  // ✅ Fungsi download PDF
-  const handleDownload = () => {
-    const element = document.getElementById("surat-bimbingan");
-    const pages = document.createElement("div");
-    pages.innerHTML = `<div class="page">${element.innerHTML}</div>`;
-
-    pages.style.fontFamily = "Times New Roman, serif";
-    pages.style.fontSize = "12pt";
-    pages.style.lineHeight = "1.4";
-
-    const opt = {
-      margin: [20, 20, 20, 20],
-      filename: `Surat_Bimbingan_Katekisasi_${data.nama || "Jemaat"}.pdf`,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      pagebreak: { mode: ["css", "legacy"] },
-    };
-
-    html2pdf().from(pages).set(opt).save();
-  };
-
   // ✅ Fungsi print langsung
   const handlePrint = () => {
     const printContent = document.getElementById("surat-bimbingan").innerHTML;
@@ -84,9 +62,6 @@ const SuratTemplateBimbinganKatekisasi = () => {
           ← Kembali
         </button>
         <div>
-          <button className="btn btn-outline-primary me-2" onClick={handleDownload}>
-            💾 Download
-          </button>
           <button className="btn btn-primary" onClick={handlePrint}>
             🖨️ Print
           </button>

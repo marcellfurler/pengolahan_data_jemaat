@@ -32,20 +32,25 @@ const PencalonanMajelis = () => {
         <div className="card shadow-lg">
           {/* === HEADER === */}
           <div
-            className="card-header d-flex align-items-center justify-content-between text-white"
+            className="card-header d-flex justify-content-between align-items-center text-white py-3 px-4"
             style={{ backgroundColor: "#004d97" }}
           >
-            <div className="d-flex align-items-center gap-3">
-              <button
-                className="btn btn-light btn-sm fw-bold"
-                onClick={() => navigate(-1)}
-              >
-                ←Kembali
-              </button>
-              <h4 className="text-center flex-grow-1 m-0 w-100">
-                🙏 Form Kesanggupan Pencalonan Majelis
-              </h4>
-            </div>
+            {/* Tombol kembali */}
+            <button
+              className="btn btn-light btn-sm"
+              onClick={() => navigate(-1)}
+              style={{ fontWeight: "bold" }}
+            >
+              ← Kembali
+            </button>
+
+            {/* Judul */}
+            <h4 className="mb-0 text-center flex-grow-1">
+              Form Surat Pencalonan Majelis
+            </h4>
+
+            {/* Spacer biar seimbang */}
+            <div style={{ width: "90px" }}></div>
           </div>
 
           {/* === BODY FORM === */}

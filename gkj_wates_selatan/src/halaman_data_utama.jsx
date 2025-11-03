@@ -26,11 +26,11 @@ const TabelDataJemaat = () => (
             <thead style={{ backgroundColor: '#f8f9fa' }}>
               <tr>
                 <th>No</th>
-                <th>NIK</th>
+                {/* <th>NIK</th> */}
                 <th>Nama Jemaat</th>
                 <th>Tempat, Tanggal Lahir</th>
                 <th>Pepanthan</th>
-                <th>Kontak</th>
+                {/* <th>Kontak</th> */}
                 <th>Status Sidi</th>
                 <th>Status Baptis</th>
                 <th>Status Pernikahan</th>
@@ -43,11 +43,11 @@ const TabelDataJemaat = () => (
               {dataJemaat.map((data, index) => (
                 <tr key={index} style={{ fontSize: '0.9rem' }}>
                   <td>{data.no}</td>
-                  <td>{data.nik.slice(0, 4)} . . .</td>
+                  {/* <td>{data.nik.slice(0, 4)} . . .</td> */}
                   <td>{data.nama}</td>
                   <td>{data.tempatLahir}, {data.tanggalLahir} </td>
                   <td>{data.pepanthan}</td>
-                  <td>{data.kontak}</td>
+                  {/* <td>{data.kontak}</td> */}
 
                   <td>
                     {data.statusSidi === 'Sidi' ? (

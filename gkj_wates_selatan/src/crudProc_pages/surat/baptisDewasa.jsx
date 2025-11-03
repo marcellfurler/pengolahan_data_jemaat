@@ -134,8 +134,8 @@ const BaptisDewasa = () => {
                     onChange={handleChange}
                   />
                 </div>
-                <div className="col-md-6">
-                  <label className="form-label">Tempat & Tanggal Nikah</label>
+                <div className="col-md-3">
+                  <label className="form-label">Tempat Nikah</label>
                   <input
                     type="text"
                     className="form-control"
@@ -143,7 +143,17 @@ const BaptisDewasa = () => {
                     onChange={handleChange}
                   />
                 </div>
+                <div className="col-md-3">
+                  <label className="form-label">Tanggal Nikah</label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    name="tanggalNikah"
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
+
 
               {/* === Jadwal === */}
               <h5 className="text-primary mb-3 fw-bold">📅 Jadwal Pelayanan</h5>

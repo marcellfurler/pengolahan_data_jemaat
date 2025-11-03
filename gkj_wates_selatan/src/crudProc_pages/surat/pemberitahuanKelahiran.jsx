@@ -188,7 +188,7 @@ const PemberitahuanKelahiran = () => {
                 <div className="col-md-4 mb-3">
                   <label className="form-label">Waktu / Pukul</label>
                   <input
-                    type="text"
+                    type="time"
                     className="form-control"
                     name="waktuLahir"
                     value={formData.waktuLahir}

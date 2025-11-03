@@ -47,18 +47,6 @@ const SuratTemplateBaptisAnak = () => {
     printWindow.print();
   };
 
-  // ✅ Download ke PDF
-  const handleDownload = () => {
-    const element = document.getElementById("surat-baptis-anak");
-    const opt = {
-      margin: 0,
-      filename: `Surat_Permohonan_Baptis_${data.namaAnak || "Anak"}.pdf`,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-    };
-    html2pdf().from(element).set(opt).save();
-  };
 
   return (
     <div>
@@ -70,9 +58,6 @@ const SuratTemplateBaptisAnak = () => {
           ← Kembali
         </button>
         <div>
-          <button className="btn btn-outline-primary me-2" onClick={handleDownload}>
-            💾 Download
-          </button>
           <button className="btn btn-primary" onClick={handlePrint}>
             🖨️ Print
           </button>
@@ -129,11 +114,13 @@ const SuratTemplateBaptisAnak = () => {
             Di Dusun II, Depok, Panjatan, Kulon Progo, Yogyakarta.
           </p>
 
-          <p>Salam Damai Dalam Kasih Tuhan Yesus Kristus,</p>
-
-          <p>
+          <p>Salam Damai Dalam Kasih Tuhan Yesus Kristus, <br />
             Dengan penuh pengharapan akan kasih dan anugerah dari Tuhan Yesus
             Kristus, melalui surat ini perkenankanlah kami :
+          </p>
+
+          <p>
+            
           </p>
 
           <table style={{ width: "100%", marginTop: "10px" }}>
@@ -208,7 +195,7 @@ const SuratTemplateBaptisAnak = () => {
           <p style={{ marginTop: "20px" }}>
             Demikian surat permohonan pelayanan baptis anak kami, atas
             perkenannya permohonan ini, kami ucapkan terima kasih, dan kiranya
-            Tuhan selalu memberkati kita sekalian. <br />Amin
+            Tuhan selalu memberkati kita sekalian. Amin
           </p>
 
           {/* === Tanda Tangan === */}
@@ -217,7 +204,7 @@ const SuratTemplateBaptisAnak = () => {
               Kulon Progo, Yogyakarta, {formatTanggalIndonesia(new Date())} <br />
               Teriring Salam dan Hormat
             </p>
-            <br />
+            <br /><br /><br />
 
             <div
               style={{
@@ -225,7 +212,7 @@ const SuratTemplateBaptisAnak = () => {
                 justifyContent: "center",
                 alignItems: "flex-end",
                 gap: "100px",
-                marginTop: "60px",
+                // marginTop: "30px",
                 textAlign: "center",
               }}
             >

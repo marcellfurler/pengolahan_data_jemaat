@@ -16,29 +16,6 @@ const SuratTemplatePertobatan = () => {
     return date.toLocaleDateString("id-ID", options);
   };
 
-  const handleDownload = () => {
-    const element = document.getElementById("surat-pertobatan");
-
-    // Tambahkan wrapper .page agar html2pdf tahu page-break
-    const pages = document.createElement("div");
-    pages.innerHTML = `<div class="page">${element.innerHTML}</div>`;
-
-    // Optional: copy style dari element asli
-    pages.style.fontFamily = "Times New Roman, serif";
-    pages.style.fontSize = "12pt";
-    pages.style.lineHeight = "1.4";
-
-    const opt = {
-      margin: [20, 20, 20, 20], // top, left, bottom, right dalam mm
-      filename: `Surat_Pertobatan_${data.nama || "Jemaat"}.pdf`,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      pagebreak: { mode: ["css", "legacy"] }, // biar page break di CSS berfungsi
-    };
-
-    html2pdf().from(pages).set(opt).save();
-  };
 
 
     const handlePrint = () => {
@@ -78,9 +55,6 @@ const SuratTemplatePertobatan = () => {
           ← Kembali
         </button>
         <div>
-          <button className="btn btn-outline-primary me-2" onClick={handleDownload}>
-            💾 Download
-          </button>
           <button className="btn btn-primary" onClick={handlePrint}>
             🖨️ Print
           </button>
@@ -186,10 +160,10 @@ const SuratTemplatePertobatan = () => {
           <p style={{ marginTop: "15px", textAlign: "justify" }}>
             Saya menyadari dengan sesungguhnya, bahwa saya telah berdosa di
             hadapan Tuhan. Saya menyesali segala dosa dan menyatakan pertobatan
-            di hadapan Tuhan dan Majelis serta Jemaat di sini. <br />
+            di hadapan Tuhan dan Majelis serta Jemaat di sini.
             Saya berjanji akan berusaha sekuat tenaga dengan tetap percaya,
             berserah, dan berharap pada pertolongan Roh Kudus untuk dapat
-            melakukan semua yang baik dan berkenan di hadapan Tuhan. <br />
+            melakukan semua yang baik dan berkenan di hadapan Tuhan. <br /><br />
             Sehubungan dengan hal tersebut perkenankan saya memohon kepada Yang
             Terhormat Majelis GKJ Wates Selatan, agar berkenan memberikan
             pelayanan Pertobatan atas diri saya, yang diharapkan dapat

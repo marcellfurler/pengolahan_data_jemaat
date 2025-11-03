@@ -39,6 +39,9 @@ import SuratTemplateBimbinganKatekesasi from './crudProc_pages/surat/hasil/surat
 import PencalonanMajelis from './crudProc_pages/surat/pencalonanMajelis'
 import SuratTemplatePencalonanMajelis from './crudProc_pages/surat/hasil/suratTemplatePencalonanMajelis'
 
+import BesukPerjamuan from './crudProc_pages/surat/besukPerjamuan.jsx'
+import SuratTemplateBesukPerjamuan from './crudProc_pages/surat/hasil/suratTemplateBesukPerjamuan.jsx'
+
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 
@@ -82,6 +85,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 
         <Route path="/surat/calon-majelis" element={<PencalonanMajelis />} />
         <Route path="/surat/hasil/calon-majelis" element={<SuratTemplatePencalonanMajelis />} />
+
+        <Route path="/surat/besuk-perjamuan" element={<BesukPerjamuan />} />
+        <Route path="/surat/hasil/besuk-perjamuan" element={<SuratTemplateBesukPerjamuan />} />
 
       </Routes>
     </BrowserRouter>

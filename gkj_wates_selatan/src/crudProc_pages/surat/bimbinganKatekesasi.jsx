@@ -167,7 +167,7 @@ const BimbinganKatekesasi = () => {
                 <div className="col-md-4">
                   <label className="form-label fw-bold">Waktu / Pukul</label>
                   <input
-                    type="text"
+                    type="time"
                     className="form-control"
                     name="waktuBimbingan"
                     value={data.waktuBimbingan}
