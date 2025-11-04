@@ -2,6 +2,7 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { NavbarComponent } from "../../../components/NavbarComponent";
 import html2pdf from "html2pdf.js";
+import { printSurat } from "../../../components/printSurat";
 
 const SuratTemplateBaptisDewasa = () => {
   const { state } = useLocation();
@@ -16,35 +17,10 @@ const SuratTemplateBaptisDewasa = () => {
     return date.toLocaleDateString("id-ID", options);
   };
 
-  // ✅ Fungsi Print
+  // === HANDLE PRINT ===
   const handlePrint = () => {
-    const printContent = document.getElementById("surat-baptis-dewasa").innerHTML;
-    const printWindow = window.open("", "_blank");
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Surat Baptis Dewasa</title>
-          <style>
-            @media print {
-              @page { size: A4; margin: 20mm; }
-              body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.4; text-align: justify; }
-              .page { page-break-after: always; width: 100%; box-sizing: border-box; }
-              .page:last-child { page-break-after: auto; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="page">${printContent}</div>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-      printWindow.print();
-      printWindow.close();
-    }, 500);
-  };
+    printSurat("surat-baptis-dewasa", "Surat Permohonan Baptis Dewasa", data.nama || "Surat_Baptis_Dewasa");
+  }
 
   // ✅ Logika: jika pasangan tidak diisi atau hanya "-"
   const adaPasangan =

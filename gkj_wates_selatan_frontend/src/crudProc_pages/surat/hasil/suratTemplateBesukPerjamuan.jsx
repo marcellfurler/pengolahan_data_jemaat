@@ -2,6 +2,7 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { NavbarComponent } from "../../../components/NavbarComponent";
 import html2pdf from "html2pdf.js";
+import { printSurat } from "../../../components/printSurat";
 
 const SuratTemplateBesukPerjamuan = () => {
   const { state } = useLocation();
@@ -28,41 +29,9 @@ const SuratTemplateBesukPerjamuan = () => {
 
   // === HANDLE PRINT ===
   const handlePrint = () => {
-    const printContent = document.getElementById("laporan-besuk-perjamuan").innerHTML;
-    const printWindow = window.open("", "_blank");
-    printWindow.document.write(`
-      <html>
-      <head>
-        <title>Laporan Besuk / Pendadaran Perjamuan Kudus</title>
-        <style>
-          @media print {
-            @page { size: A4; margin: 20mm; }
-            body {
-              font-family: 'Times New Roman', serif;
-              font-size: 12pt;
-              line-height: 1.4;
-              margin: 0;
-              padding: 0;
-            }
-            .page { page-break-after: always; width: 100%; }
-            .page:last-child { page-break-after: auto; }
-            table { border-collapse: collapse; width: 100%; }
-            th, td { border: 1px solid black; padding: 4px; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="page">${printContent}</div>
-      </body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-      printWindow.print();
-      printWindow.close();
-    }, 500);
-  };
+    printSurat("laporan-besuk-perjamuan", "Laporan Besuk Perjamuan Kudus", data.wilayah || "Laporan_Besuk_Perjamuan");
+  }
+
 
   // === Komponen Tabel Dinamis ===
   const renderTable = (title, list) => (

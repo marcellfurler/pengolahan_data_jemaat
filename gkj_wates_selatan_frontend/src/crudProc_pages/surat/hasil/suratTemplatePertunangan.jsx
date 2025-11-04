@@ -2,6 +2,7 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { NavbarComponent } from "../../../components/NavbarComponent";
 import html2pdf from "html2pdf.js";
+import { printSurat } from "../../../components/printSurat";
 
 const SuratTemplatePertunangan = () => {
   const { state } = useLocation();
@@ -16,35 +17,10 @@ const SuratTemplatePertunangan = () => {
     return date.toLocaleDateString("id-ID", options);
   };
 
-  // Print surat
-    const handlePrint = () => {
-    const printContent = document.getElementById("surat-pertunangan").innerHTML;
-    const printWindow = window.open("", "_blank");
-    printWindow.document.write(`
-        <html>
-        <head>
-            <title>Surat Pertunangan</title>
-            <style>
-            @media print {
-                @page { size: A4; margin: 20mm; }
-                body { margin: 0; padding: 0; font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.4; text-align: justify;}
-                .page { page-break-after: always; width: 100%; box-sizing: border-box; }
-                .page:last-child { page-break-after: auto; }
-            }
-            </style>
-        </head>
-        <body>
-            <div class="page">${printContent}</div>
-        </body>
-        </html>
-    `);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-        printWindow.print();
-        printWindow.close();
-    }, 500);
-    };
+  // === HANDLE PRINT ===
+  const handlePrint = () => {
+    printSurat("surat-pertunangan", "Surat Permohonan Pertunangan", data.namaPerempuan || "Surat_Pertunangan");
+  }
 
   return (
     <div>

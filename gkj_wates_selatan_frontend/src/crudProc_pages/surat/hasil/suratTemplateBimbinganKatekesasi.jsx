@@ -2,6 +2,7 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { NavbarComponent } from "../../../components/NavbarComponent";
 import html2pdf from "html2pdf.js";
+import { printSurat } from "../../../components/printSurat";
 
 const SuratTemplateBimbinganKatekisasi = () => {
   const { state } = useLocation();
@@ -16,42 +17,10 @@ const SuratTemplateBimbinganKatekisasi = () => {
     return date.toLocaleDateString("id-ID", options);
   };
 
-  // ✅ Fungsi print langsung
+  // === HANDLE PRINT ===
   const handlePrint = () => {
-    const printContent = document.getElementById("surat-bimbingan").innerHTML;
-    const printWindow = window.open("", "_blank");
-    printWindow.document.write(`
-      <html>
-      <head>
-        <title>Surat Bimbingan Katekisasi</title>
-        <style>
-          @media print {
-            @page { size: A4; margin: 20mm; }
-            body {
-              margin: 0;
-              padding: 0;
-              font-family: 'Times New Roman', serif;
-              font-size: 12pt;
-              line-height: 1.4;
-            }
-            .page { page-break-after: always; width: 100%; }
-            .page:last-child { page-break-after: auto; }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="page">${printContent}</div>
-      </body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-      printWindow.print();
-      printWindow.close();
-    }, 500);
-  };
-
+    printSurat("surat-bimbingan", "Surat Permohonan Bimbingan Katekesasi", data.nama || "Surat_Bimbingan_Katekisasi");
+  }
   return (
     <div>
       <NavbarComponent />
