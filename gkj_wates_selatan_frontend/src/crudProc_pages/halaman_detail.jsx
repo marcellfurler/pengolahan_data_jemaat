@@ -24,7 +24,7 @@ const DetailListItem = ({ label, value }) => (
 // -----------------------------
 const DetailJemaat = ({ data }) => {
   const dataPribadi = [
-    { label: 'NIK', value: data.nik || '-' },
+    { label: 'NIK', value: data.NIK || '-' },
     { label: 'Nama Lengkap', value: data.nama || '-' },
     { label: 'TTL', value: `${data.tempatLahir || '-'}, ${data.tanggalLahir || data.ttl || '-'}` },
     { label: 'Jenis Kelamin', value: data.jenisKelamin || '-' },
@@ -34,16 +34,16 @@ const DetailJemaat = ({ data }) => {
   ];
 
   const dataKontak = [
-    { label: 'No. Telepon', value: data.telepon || data.kontak || '-' },
+    { label: 'No. Telepon', value: data.nomorTelepon || data.kontak || '-' },
     { label: 'Alamat', value: data.alamat || '-' },
   ];
 
   const dataGerejawi = [
-    { label: 'Pepanthan', value: data.pepanthan || '-' },
+    { label: 'Pepanthan', value: data.namaPepanthan || '-' },
     { label: 'Status Sidi', value: data.statusSidi || '-' },
     { label: 'Status Baptis', value: data.statusBaptis || '-' },
     { label: 'Status Nikah', value: data.statusNikah || '-' },
-    { label: 'Status Pelayanan', value: data.statusPelayanan || '-' },
+    { label: 'Status Pelayanan', value: data.namaPelayanan || '-' },
   ];
 
   return (
@@ -96,9 +96,9 @@ const DetailJemaat = ({ data }) => {
                 className="img-fluid rounded-circle shadow mb-3"
                 style={{ width: '150px', height: '150px', objectFit: 'cover' }}
               />
-              <h5 className="fw-bold text-primary mb-1">{data.nama || 'Nama Jemaat'}</h5>
-              <p className="text-muted small mb-0">{data.statusPelayanan || '-'}</p>
-              <p className="text-muted small">Pepanthan: {data.pepanthan || '-'}</p>
+              <h5 className="fw-bold  mb-1" style={{ color: "#004d97" }}>{data.nama || 'Nama Jemaat'}</h5>
+              <p className="text-muted small mb-0" >{data.namaPelayanan || '-'}</p>
+              <p className="text-muted small">Pepanthan: {data.namaPepanthan || '-'}</p>
             </div>
 
             {/* DATA DETAIL */}

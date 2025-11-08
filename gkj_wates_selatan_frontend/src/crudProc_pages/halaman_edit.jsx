@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPencilAlt, faArrowLeft, faSave } from '@fortawesome/free-solid-svg-icons'; 
 import logoGKJ from '../assets/logoGKJ.png';
 import { NavbarComponent } from '../components/NavbarComponent';
+// 
 
 
 
 const EditJemaat = () => {
   const { nik } = useParams();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     nama: "",
     tempatLahir: "",
@@ -68,13 +70,15 @@ const EditJemaat = () => {
             }}
           >
             {/* Tombol Kembali di sebelah kiri */}
-            <Link
-              to="/data"
+            <button
+              type="button"
+              onClick={() => navigate(-1)}   // 👈 Kembali satu halaman sebelumnya
               className="btn btn-light btn-sm fw-bold position-absolute start-0 ms-3"
-              style={{color:"#004d97"}}
+              style={{ color: "#004d97" }}
             >
               <FontAwesomeIcon icon={faArrowLeft} className="me-1" /> Kembali
-            </Link>
+            </button>
+
 
             <h5 className="mb-0 fw-bold text-center flex-grow-1">
               EDIT DATA JEMAAT

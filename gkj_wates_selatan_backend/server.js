@@ -1,16 +1,27 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
-import baptisRoutes from "./routes/baptisRoutes.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
-dotenv.config();
+import dataJemaatRoutes from "./routes/dataJemaatRoutes.js";
+import dataNikahRoutes from "./routes/dataNikahRoutes.js";
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// === Route utama ===
-app.use("/api/baptis", baptisRoutes);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Jalankan server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`✅ Server berjalan di port ${PORT}`));
+// folder public untuk gambar sertifikat
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+app.use("/api/jemaat", dataJemaatRoutes);
+app.use("/api/nikah", dataNikahRoutes);
+
+app.get("/", (req, res) => {
+  res.send("✅ Server GKJ Backend aktif dan berjalan 🚀");
+});
+
+const PORT = 5000;
+app.listen(PORT, () => console.log(`✅ Server di http://localhost:${PORT}`));
