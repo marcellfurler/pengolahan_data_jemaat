@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import dataJemaatRoutes from "./routes/dataJemaatRoutes.js";
 import dataNikahRoutes from "./routes/dataNikahRoutes.js";
 import dataSidiRoutes from "./routes/dataSidiRoutes.js";
+import dataBaptisRoutes from "./routes/dataBaptisRoutes.js";
 
 const app = express();
 app.use(cors());
@@ -20,6 +21,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/jemaat", dataJemaatRoutes);
 app.use("/api/nikah", dataNikahRoutes);
 app.use("/api/sidi", dataSidiRoutes);
+app.use("/api/baptis", dataBaptisRoutes);
 
 app.get("/", (req, res) => {
   res.send("✅ Server GKJ Backend aktif dan berjalan 🚀");

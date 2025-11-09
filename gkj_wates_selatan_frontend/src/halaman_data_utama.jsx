@@ -76,7 +76,12 @@ const TabelDataJemaat = () => {
 
                     <td>
                       {data.statusBaptis === 'Baptis' ? (
-                        <Link to={`/detail-jemaat/${data.nik}?status=baptis`} className="text-primary">
+                        <Link 
+                          to="/sertifikat-baptis"
+                          state={{ nik: data.NIK, nama: data.nama }} 
+                          className="text-primary"
+                          onClick={() => console.log("🔗 Mengirim NIK:", data.NIK)}
+                        >
                           {data.statusBaptis}
                         </Link>
                       ) : (
