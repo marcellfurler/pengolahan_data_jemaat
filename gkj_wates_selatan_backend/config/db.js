@@ -1,16 +1,17 @@
+// config/db.js
 import mysql from "mysql2";
 
 export const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "", // isi sesuai setting Laragon kamu
-  database: "gkj_wates_selatan",
+  password: "", // ganti sesuai MySQL kamu
+  database: "gkj_wates_selatan" // ganti sesuai nama database kamu
 });
 
 db.connect((err) => {
   if (err) {
-    console.error("❌ Koneksi database gagal:", err);
+    console.error("❌ Gagal konek database:", err);
   } else {
-    console.log("✅ Terhubung ke database MySQL (Laragon)");
+    console.log("✅ Database terhubung");
   }
 });

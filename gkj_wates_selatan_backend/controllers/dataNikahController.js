@@ -1,9 +1,9 @@
 // controllers/dataNikahController.js
-import { db } from "../config/db.js";
+import { db } from "../config/db.js"; // ✅ tambahkan ini di paling atas
 
 export const getSertifikatNikahByNik = (req, res) => {
-  const { nik } = req.params;
-   console.log("🔍 NIK diterima dari frontend:", nik);
+  const { nik } = req.params; // huruf kecil sesuai di routes
+  console.log("📥 NIK diterima dari frontend:", nik);
 
   const query = `
     SELECT sertifikatNikah
@@ -19,22 +19,14 @@ export const getSertifikatNikahByNik = (req, res) => {
     }
 
     if (results.length === 0) {
+      console.log("⚠️ Tidak ada sertifikat untuk NIK:", nik);
       return res.status(404).json({ message: "Sertifikat nikah tidak ditemukan" });
     }
 
-    // kirim URL lengkap biar React langsung bisa akses
     const sertifikatPath = results[0].sertifikatNikah;
-    
-    // 1. Ganti backslash ke forward slash
-    let cleanPath = sertifikatPath.replace(/\\/g, "/"); 
-    
-    // 2. Hapus slash ganda di awal jika ada (jika dimulai dengan /)
-    if (cleanPath.startsWith('/')) {
-        cleanPath = cleanPath.substring(1); 
-    }
-
-    const fullUrl = `http://localhost:5000/${cleanPath}`;
+    const fullUrl = `http://localhost:5000/${sertifikatPath.replace(/\\/g, "/")}`;
+    console.log("✅ URL sertifikat dikirim ke frontend:", fullUrl);
 
     res.json({ sertifikatNikah: fullUrl });
-});
+  });
 };

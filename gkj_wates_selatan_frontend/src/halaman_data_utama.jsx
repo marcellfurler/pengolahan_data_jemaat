@@ -52,18 +52,27 @@ const TabelDataJemaat = () => {
                   <tr key={index} style={{ fontSize: '0.9rem' }}>
                     <td>{index + 1}</td>
                     <td>{data.nama}</td>
-                    <td>{data.tempatLahir}, {data.tanggalLahir}</td>
+                    <td>
+                      {data.tempatLahir}, {new Date(data.tanggalLahir).toLocaleDateString("id-ID")}
+                    </td>
+
                     <td>{data.namaPepanthan || '-'}</td>
 
                     <td>
                       {data.statusSidi === 'Sidi' ? (
-                        <Link to={`/sertifikat-sidi}`} className="text-primary">
+                        <Link 
+                          to="/sertifikat-sidi" 
+                          state={{ nik: data.NIK, nama: data.nama }} // ✅ kirim 'nik' kecil
+                          className="text-primary"
+                          onClick={() => console.log("🔗 Mengirim NIK (Sidi):", data.NIK)}
+                        >
                           {data.statusSidi}
                         </Link>
                       ) : (
                         <span>{data.statusSidi || 'Belum Sidi'}</span>
                       )}
                     </td>
+
 
                     <td>
                       {data.statusBaptis === 'Baptis' ? (
@@ -77,13 +86,16 @@ const TabelDataJemaat = () => {
 
                     <td>
                       {data.statusNikah === 'Menikah' ? (
-                        <Link 
+                      <Link 
                         to="/sertifikat-nikah" 
-                        state={{ nik: data.nik, nama: data.nama }} 
+                        state={{ nik: data.NIK, nama: data.nama }} 
                         className="text-primary"
+                        onClick={() => console.log("🔗 Mengirim NIK:", data.NIK)}
                       >
                         {data.statusNikah}
                       </Link>
+
+
 
                       ) : (
                         <span>{data.statusNikah || 'Belum Menikah'}</span>

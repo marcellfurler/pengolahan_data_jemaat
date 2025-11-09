@@ -5,35 +5,33 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faDownload } from "@fortawesome/free-solid-svg-icons";
 import { printSertifikat } from "../components/printSertifikat";
 
-const SertifikatNikah = () => {
+const SertifikatSidi = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
   const [sertifikatUrl, setSertifikatUrl] = useState("");
 
   useEffect(() => {
-    const nik = state?.nik; // ✅ gunakan versi kecil
-
+    const nik = state?.nik; // ✅ gunakan huruf kecil agar konsisten
     if (nik) {
-      console.log("📤 Mengirim request untuk NIK:", nik);
-      
-      fetch(`http://localhost:5000/api/nikah/${nik}`)
+      console.log("📤 Mengirim request untuk NIK (Sidi):", nik);
+
+      fetch(`http://localhost:5000/api/sidi/${nik}`)
         .then((res) => {
           console.log("📥 Status response:", res.status);
           return res.json();
         })
         .then((data) => {
-          console.log("📦 Data diterima:", data);
-          
-          if (data && data.sertifikatNikah) {
-            console.log("✅ URL Sertifikat:", data.sertifikatNikah);
-            setSertifikatUrl(data.sertifikatNikah);
+          console.log("📦 Data diterima (Sidi):", data);
+          if (data && data.sertifikatSidi) {
+            console.log("✅ URL Sertifikat Sidi:", data.sertifikatSidi);
+            setSertifikatUrl(data.sertifikatSidi);
           } else {
-            console.log("❌ Sertifikat tidak ada di response");
+            console.log("❌ Sertifikat Sidi tidak ada di response");
             setSertifikatUrl(null);
           }
         })
         .catch((err) => {
-          console.error("❌ Error fetch:", err);
+          console.error("❌ Error fetch Sidi:", err);
         });
     } else {
       console.log("⚠️ State atau NIK tidak ada:", state);
@@ -45,24 +43,31 @@ const SertifikatNikah = () => {
       <NavbarComponent />
 
       <div className="container py-5">
+        {/* 🔹 Header */}
         <div className="d-flex justify-content-between align-items-center mb-4">
           <button className="btn btn-secondary" onClick={() => navigate(-1)}>
             <FontAwesomeIcon icon={faArrowLeft} className="me-2" /> Kembali
           </button>
 
-          <h4 className="fw-bold text-primary mb-0">Sertifikat Nikah Jemaat</h4>
+          <h4 className="fw-bold text-primary mb-0">Sertifikat Sidi Jemaat</h4>
 
           <button
             className="btn btn-success"
-            onClick={() => printSertifikat("sertifikat-nikah", `Sertifikat_Nikah_${state?.nama || "Jemaat"}.pdf`)}
+            onClick={() =>
+              printSertifikat(
+                "sertifikat-sidi",
+                `Sertifikat_Sidi_${state?.nama || "Jemaat"}.pdf`
+              )
+            }
             disabled={!sertifikatUrl}
           >
             <FontAwesomeIcon icon={faDownload} className="me-2" /> Download PDF
           </button>
         </div>
 
+        {/* 🔹 Konten Sertifikat */}
         <div
-          id="sertifikat-nikah"
+          id="sertifikat-sidi"
           className="bg-white shadow p-4 rounded text-center"
           style={{
             maxWidth: "700px",
@@ -74,15 +79,15 @@ const SertifikatNikah = () => {
             <>
               <img
                 src={sertifikatUrl}
-                alt="Sertifikat Nikah"
+                alt="Sertifikat Sidi"
                 style={{
                   maxWidth: "100%",
                   borderRadius: "10px",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
                 }}
-                onLoad={() => console.log("✅ Gambar berhasil dimuat!")}
+                onLoad={() => console.log("✅ Gambar Sidi berhasil dimuat!")}
                 onError={(e) => {
-                  console.error("❌ Gagal load gambar:", sertifikatUrl);
+                  console.error("❌ Gagal load gambar Sidi:", sertifikatUrl);
                   console.error("❌ Error event:", e);
                 }}
               />
@@ -92,7 +97,7 @@ const SertifikatNikah = () => {
             </>
           ) : (
             <p className="text-danger">
-              ❌ Sertifikat nikah tidak ditemukan untuk jemaat ini.
+              ❌ Sertifikat sidi tidak ditemukan untuk jemaat ini.
             </p>
           )}
         </div>
@@ -101,4 +106,4 @@ const SertifikatNikah = () => {
   );
 };
 
-export default SertifikatNikah;
+export default SertifikatSidi;
