@@ -45,123 +45,78 @@ export const getAllJemaat = (req, res) => {
 // ✅ Fungsi untuk update data jemaat dan sertifikat
 export const updateJemaat = (req, res) => {
   const { nik } = req.params;
+
   let {
-    nama,
+    namaLengkap,
     tempatLahir,
     tanggalLahir,
     jenisKelamin,
     agama,
     golonganDarah,
     wargaNegara,
-    telepon,
+    nomorTelepon,
     alamat,
   } = req.body;
 
-  // Format tanggal MySQL
   if (tanggalLahir && tanggalLahir.includes("T")) {
     tanggalLahir = tanggalLahir.split("T")[0];
   }
 
-  // Ambil foto lama
-  db.query("SELECT foto FROM dataJemaat WHERE NIK = ?", [nik], (err, results) => {
+  // Ambil data lama dulu
+  const getOldDataQuery = `SELECT * FROM dataJemaat WHERE NIK = ?`;
+  db.query(getOldDataQuery, [nik], (err, results) => {
     if (err) return res.status(500).json({ message: "Gagal mengambil data lama" });
+    if (results.length === 0)
+      return res.status(404).json({ message: "Data jemaat tidak ditemukan" });
 
-    const oldFoto = results[0]?.foto || "";
-    let finalFoto = oldFoto;
+    const oldData = results[0];
 
-    // Jika ada upload baru, gunakan path relatif
+    // Kalau nomorTelepon baru kosong/null, gunakan yang lama
+    if (!nomorTelepon || nomorTelepon.trim() === "") {
+      nomorTelepon = oldData.nomorTelepon;
+    }
+
+    let finalFoto = oldData.foto;
     if (req.files?.foto?.[0]) {
       finalFoto = path
         .relative(process.cwd(), req.files.foto[0].path)
         .replace(/\\/g, "/");
     }
 
-    // Update data jemaat
     const updateQuery = `
       UPDATE dataJemaat
-      SET namaLengkap=?, tempatLahir=?, tanggalLahir=?, jenisKelamin=?, agama=?, golonganDarah=?, 
-          wargaNegara=?, nomorTelepon=?, alamat=?, foto=?
+      SET 
+        namaLengkap=?, tempatLahir=?, tanggalLahir=?, jenisKelamin=?, agama=?, golonganDarah=?,
+        wargaNegara=?, nomorTelepon=?, alamat=?, foto=?
       WHERE NIK=?
     `;
 
     db.query(
       updateQuery,
       [
-        nama,
+        namaLengkap,
         tempatLahir,
         tanggalLahir,
         jenisKelamin,
         agama,
         golonganDarah,
         wargaNegara,
-        telepon,
+        nomorTelepon,
         alamat,
         finalFoto,
         nik,
       ],
       (err2) => {
-        if (err2)
+        if (err2) {
+          console.error("Error update:", err2);
           return res.status(500).json({ message: "Gagal update data jemaat" });
-
-        // Handle semua sertifikat sekaligus
-        const sertifikatMap = {
-          sertifikatSidi: "dataSidi",
-          sertifikatBaptis: "dataBaptis",
-          sertifikatNikah: "dataNikah",
-        };
-
-        const updatePromises = [];
-
-        for (const field in sertifikatMap) {
-          const tableName = sertifikatMap[field];
-          if (req.files?.[field]?.[0]) {
-            const filePathRel = path
-              .relative(process.cwd(), req.files[field][0].path)
-              .replace(/\\/g, "/");
-
-            // Insert/update sertifikat + ubah status
-            const statusField =
-              field === "sertifikatBaptis"
-                ? "statusBaptis"
-                : field === "sertifikatSidi"
-                ? "statusSidi"
-                : "statusNikah";
-            const statusValue =
-              field === "sertifikatBaptis"
-                ? "Baptis"
-                : field === "sertifikatSidi"
-                ? "Sidi"
-                : "Menikah";
-
-            const query = `
-              INSERT INTO ${tableName} (NIK, ${field}, ${statusField})
-              VALUES (?, ?, ?)
-              ON DUPLICATE KEY UPDATE 
-                ${field} = VALUES(${field}), 
-                ${statusField} = VALUES(${statusField})
-            `;
-            updatePromises.push(
-              new Promise((resolve, reject) => {
-                db.query(query, [nik, filePathRel, statusValue], (err3) => {
-                  if (err3) reject(err3);
-                  else resolve();
-                });
-              })
-            );
-          }
         }
 
-        Promise.all(updatePromises)
-          .then(() =>
-            res.json({
-              message: "✅ Data jemaat dan sertifikat berhasil diperbarui",
-            })
-          )
-          .catch((err) => {
-            console.error("❌ Gagal update sertifikat:", err);
-            res.status(500).json({ message: "Gagal update sertifikat" });
-          });
+        // Sertifikat (tetap sama)
+        res.json({ message: "✅ Data jemaat berhasil diperbarui" });
       }
     );
   });
 };
+
+

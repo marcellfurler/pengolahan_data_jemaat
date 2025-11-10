@@ -180,22 +180,28 @@ const EditJemaat = () => {
               {/* Kolom kanan */}
               <div className="col-md-6">
                 <label className="form-label fw-bold">Golongan Darah</label>
-                <input
-                  type="text"
+                 <select
                   name="golonganDarah"
                   value={formData.golonganDarah}
                   onChange={handleChange}
-                  className="form-control"
-                />
+                  className="form-select"
+                >
+                  <option value="">Pilih...</option>
+                  <option value="A">A</option>
+                  <option value="AB">AB</option>
+                  <option value="O">O</option>
+                  <option value="B">B</option>
+                </select>
 
                 <label className="form-label fw-bold mt-3">Telepon</label>
                 <input
                   type="text"
-                  name="telepon"
-                  value={formData.telepon}
+                  name="nomorTelepon"
+                  value={formData.nomorTelepon || ""} // 👈 ini penting
                   onChange={handleChange}
                   className="form-control"
                 />
+
 
                 <label className="form-label fw-bold mt-3">Alamat</label>
                 <textarea
@@ -207,13 +213,18 @@ const EditJemaat = () => {
                 ></textarea>
 
                 <label className="form-label fw-bold mt-3">Pepanthan</label>
-                <input
-                  type="text"
-                  name="pepanthan"
-                  value={formData.pepanthan}
+                <select
+                  name="namaPepanthan"
+                  value={formData.namaPepanthan}
                   onChange={handleChange}
-                  className="form-control"
-                />
+                  className="form-select"
+                >
+                  <option value="">Pilih...</option>
+                  <option value="Induk Depok">Induk Depok</option>
+                  <option value="Triharjo">Triharjo</option>
+                  <option value="Wonogiri">Wonogiri</option>
+                  <option value="Galur">Galur</option>
+                </select>
 
                 <label className="form-label fw-bold mt-3">Foto (URL)</label>
                 <label className="form-label fw-bold mt-3">Foto Profil</label>
