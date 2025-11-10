@@ -40,6 +40,7 @@ export const getAllJemaat = (req, res) => {
 };
 
 // ✅ Update data jemaat + pepanthan
+// controllers/dataJemaatController.js
 export const updateJemaat = (req, res) => {
   const { nik } = req.params;
   let {
@@ -52,14 +53,17 @@ export const updateJemaat = (req, res) => {
     wargaNegara,
     nomorTelepon,
     alamat,
-    namaPepanthan, // ✅ tambahkan
+    namaPepanthan,
+    statusBaptis,
+    statusSidi,
+    statusNikah,
   } = req.body;
 
   if (tanggalLahir && tanggalLahir.includes("T")) {
     tanggalLahir = tanggalLahir.split("T")[0];
   }
 
-  // 🔹 Ambil data lama dulu untuk mencegah kehilangan data (seperti nomorTelepon & foto)
+  // Ambil data lama
   const getOldDataQuery = `SELECT * FROM dataJemaat WHERE NIK = ?`;
   db.query(getOldDataQuery, [nik], (err, results) => {
     if (err) return res.status(500).json({ message: "Gagal mengambil data lama" });
@@ -67,19 +71,14 @@ export const updateJemaat = (req, res) => {
       return res.status(404).json({ message: "Data jemaat tidak ditemukan" });
 
     const oldData = results[0];
+    nomorTelepon = nomorTelepon?.trim() ? nomorTelepon : oldData.nomorTelepon;
 
-    // 🔹 Jika nomorTelepon baru kosong, pakai nomor lama
-    if (!nomorTelepon || nomorTelepon.trim() === "") {
-      nomorTelepon = oldData.nomorTelepon;
-    }
-
-    // 🔹 Jika tidak upload foto baru, gunakan yang lama
     let finalFoto = oldData.foto;
     if (req.files?.foto?.[0]) {
       finalFoto = path.relative(process.cwd(), req.files.foto[0].path).replace(/\\/g, "/");
     }
 
-    // 🔹 Update data jemaat
+    // 1️⃣ Update data jemaat utama
     const updateJemaatQuery = `
       UPDATE dataJemaat
       SET 
@@ -104,50 +103,97 @@ export const updateJemaat = (req, res) => {
         nik,
       ],
       (err2) => {
-        if (err2) {
-          console.error("❌ Gagal update data jemaat:", err2);
-          return res.status(500).json({ message: "Gagal update data jemaat" });
-        }
+        if (err2) return res.status(500).json({ message: "Gagal update data jemaat" });
 
-        // 🔹 Update tabel pepanthan (jika ada perubahan nama pepanthan)
-        if (namaPepanthan && namaPepanthan.trim() !== "") {
-          const checkPepanthanQuery = `SELECT * FROM dataPepanthan WHERE NIK = ?`;
-          db.query(checkPepanthanQuery, [nik], (err3, resultPepanthan) => {
-            if (err3) {
-              console.error("❌ Gagal cek data pepanthan:", err3);
-              return res.status(500).json({ message: "Gagal update data pepanthan" });
-            }
-
-            if (resultPepanthan.length > 0) {
-              // Jika sudah ada, update
-              const updatePepanthanQuery = `
-                UPDATE dataPepanthan SET namaPepanthan=? WHERE NIK=?
-              `;
-              db.query(updatePepanthanQuery, [namaPepanthan, nik], (err4) => {
-                if (err4) {
-                  console.error("❌ Gagal update pepanthan:", err4);
-                  return res.status(500).json({ message: "Gagal update data pepanthan" });
-                }
-                res.json({ message: "✅ Data jemaat & pepanthan berhasil diperbarui" });
-              });
-            } else {
-              // Jika belum ada, tambahkan data pepanthan baru
-              const insertPepanthanQuery = `
-                INSERT INTO dataPepanthan (NIK, namaPepanthan) VALUES (?, ?)
-              `;
-              db.query(insertPepanthanQuery, [nik, namaPepanthan], (err5) => {
-                if (err5) {
-                  console.error("❌ Gagal tambah data pepanthan:", err5);
-                  return res.status(500).json({ message: "Gagal tambah data pepanthan" });
-                }
-                res.json({ message: "✅ Data jemaat & pepanthan berhasil diperbarui" });
-              });
-            }
+        // 2️⃣ Update Pepanthan
+        const updatePepanthan = () => {
+          if (!namaPepanthan?.trim()) return Promise.resolve();
+          return new Promise((resolve, reject) => {
+            const checkQuery = `SELECT * FROM dataPepanthan WHERE NIK=?`;
+            db.query(checkQuery, [nik], (err3, result) => {
+              if (err3) return reject(err3);
+              if (result.length > 0) {
+                db.query(`UPDATE dataPepanthan SET namaPepanthan=? WHERE NIK=?`, [namaPepanthan, nik], (err4) => {
+                  if (err4) reject(err4);
+                  else resolve();
+                });
+              } else {
+                db.query(`INSERT INTO dataPepanthan (NIK, namaPepanthan) VALUES (?, ?)`, [nik, namaPepanthan], (err4) => {
+                  if (err4) reject(err4);
+                  else resolve();
+                });
+              }
+            });
           });
-        } else {
-          res.json({ message: "✅ Data jemaat berhasil diperbarui" });
-        }
+        };
+
+        // 3️⃣ Update status gerejawi
+        const updateStatus = (statusType) => {
+          if (!statusType || !req.files?.sertifikat?.[0]) return Promise.resolve();
+
+          const sertifikatPath = path.relative(process.cwd(), req.files.sertifikat[0].path).replace(/\\/g, "/");
+
+          let table, columnStatus, columnFile;
+          if (statusType === "baptis") {
+            table = "dataBaptis";
+            columnStatus = "statusBaptis";
+            columnFile = "sertifikatBaptis";
+          }
+          if (statusType === "sidi") {
+            table = "dataSidi";
+            columnStatus = "statusSidi";
+            columnFile = "sertifikatSidi";
+          }
+          if (statusType === "nikah") {
+            table = "dataNikah";
+            columnStatus = "statusNikah";
+            columnFile = "sertifikatNikah";
+          }
+
+          return new Promise((resolve, reject) => {
+            db.query(`SELECT * FROM ${table} WHERE NIK=?`, [nik], (err, result) => {
+              if (err) return reject(err);
+
+              const statusValue =
+                statusType === "baptis"
+                  ? "Baptis"
+                  : statusType === "sidi"
+                  ? "Sidi"
+                  : statusType === "nikah"
+                  ? "Menikah"
+                  : "";
+
+              if (result.length > 0) {
+                // Update jika sudah ada
+                const updateQuery = `UPDATE ${table} SET ${columnStatus}=?, ${columnFile}=? WHERE NIK=?`;
+                db.query(updateQuery, [statusValue, sertifikatPath, nik], (err2) =>
+                  err2 ? reject(err2) : resolve()
+                );
+              } else {
+                // Insert baru jika belum ada
+                const insertQuery = `INSERT INTO ${table} (NIK, ${columnStatus}, ${columnFile}) VALUES (?, ?, ?)`;
+                db.query(insertQuery, [nik, statusValue, sertifikatPath], (err2) =>
+                  err2 ? reject(err2) : resolve()
+                );
+              }
+            });
+          });
+        };
+
+
+        // 4️⃣ Jalankan semuanya
+        (async () => {
+          try {
+            await updatePepanthan();
+            await updateStatus(req.body.statusType);
+            res.json({ message: "✅ Data jemaat & status gerejawi berhasil diperbarui" });
+          } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: "Gagal update status gerejawi" });
+          }
+        })();
       }
     );
   });
 };
+
