@@ -75,7 +75,8 @@ const DetailJemaat = ({ data }) => {
 
           {/* Tombol Edit di kanan */}
           <Link
-            to={`/edit`}
+            to="/edit"
+            state={{ data }} // ✅ kirim seluruh data jemaat ke halaman edit
             className="btn btn-light btn-sm fw-bold position-absolute end-0 me-3"
             style={{ color: "#004d97" }}
             title="Edit Data"
