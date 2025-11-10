@@ -34,12 +34,12 @@ const DetailJemaat = ({ data }) => {
   ];
 
   const dataKontak = [
-    { label: 'No. Telepon', value: data.telepon || data.kontak || '-' },
+    { label: 'No. Telepon', value: data.nomorTelepon || data.kontak || '-' },
     { label: 'Alamat', value: data.alamat || '-' },
   ];
 
   const dataGerejawi = [
-    { label: 'Pepanthan', value: data.pepanthan || '-' },
+    { label: 'Pepanthan', value: data.namaPepanthan || '-' },
     { label: 'Status Sidi', value: data.statusSidi || '-' },
     { label: 'Status Baptis', value: data.statusBaptis || '-' },
     { label: 'Status Nikah', value: data.statusNikah || '-' },
@@ -99,7 +99,7 @@ const DetailJemaat = ({ data }) => {
 
               <h5 className="fw-bold  mb-1" style={{ color: "#004d97" }}>{data.nama || 'Nama Jemaat'}</h5>
               <p className="text-muted small mb-0" >{data.namaPelayanan || '-'}</p>
-              <p className="text-muted small">Pepanthan: {data.pepanthan || '-'}</p>
+              <p className="text-muted small">Pepanthan: {data.namaPepanthan || '-'}</p>
             </div>
 
             {/* DATA DETAIL */}

@@ -56,7 +56,7 @@ const TabelDataJemaat = () => {
                       {data.tempatLahir}, {new Date(data.tanggalLahir).toLocaleDateString("id-ID")}
                     </td>
 
-                    <td>{data.pepanthan || '-'}</td>
+                    <td>{data.namaPepanthan || '-'}</td>
 
                     <td>
                       {data.statusSidi === 'Sidi' ? (

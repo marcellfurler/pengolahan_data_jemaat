@@ -2,7 +2,7 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
-import { getAllJemaat, updateJemaat } from "../controllers/dataJemaatController.js";
+import * as dataJemaatController from "../controllers/dataJemaatController.js";
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -14,10 +14,15 @@ const storage = multer.diskStorage({
     if (file.fieldname === "foto") {
       cb(null, path.join(__dirname, "../uploads/fotoProfil"));
     } else if (file.fieldname === "sertifikat") {
-      if (req.body.statusType === "sidi") cb(null, path.join(__dirname, "../uploads/sertifikat/sertifikatSidi"));
-      else if (req.body.statusType === "baptis") cb(null, path.join(__dirname, "../uploads/sertifikat/sertifikatBaptis"));
-      else if (req.body.statusType === "nikah") cb(null, path.join(__dirname, "../uploads/sertifikat/sertifikatNikah"));
-      else cb(null, path.join(__dirname, "../uploads/sertifikat"));
+      if (req.body.statusType === "sidi") {
+        cb(null, path.join(__dirname, "../uploads/sertifikat/sertifikatSidi"));
+      } else if (req.body.statusType === "baptis") {
+        cb(null, path.join(__dirname, "../uploads/sertifikat/sertifikatBaptis"));
+      } else if (req.body.statusType === "nikah") {
+        cb(null, path.join(__dirname, "../uploads/sertifikat/sertifikatNikah"));
+      } else {
+        cb(null, path.join(__dirname, "../uploads/sertifikat"));
+      }
     }
   },
   filename: (req, file, cb) => {
@@ -28,7 +33,8 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-router.get("/", getAllJemaat);
+// Gunakan referensi dari objek import
+router.get("/", dataJemaatController.getAllJemaat);
 
 router.put(
   "/:nik",
@@ -36,7 +42,7 @@ router.put(
     { name: "foto", maxCount: 1 },
     { name: "sertifikat", maxCount: 1 },
   ]),
-  updateJemaat
+  dataJemaatController.updateJemaat
 );
 
 export default router;
