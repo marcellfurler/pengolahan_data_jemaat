@@ -46,7 +46,7 @@ export const getAllJemaat = (req, res) => {
 export const updateJemaat = (req, res) => {
   const { nik } = req.params;
 
-  let {
+  const {
     namaLengkap,
     tempatLahir,
     tanggalLahir,
@@ -58,32 +58,39 @@ export const updateJemaat = (req, res) => {
     alamat,
   } = req.body;
 
-  if (tanggalLahir && tanggalLahir.includes("T")) {
-    tanggalLahir = tanggalLahir.split("T")[0];
-  }
-
   // Ambil data lama dulu
-  const getOldDataQuery = `SELECT * FROM dataJemaat WHERE NIK = ?`;
-  db.query(getOldDataQuery, [nik], (err, results) => {
+  db.query("SELECT * FROM dataJemaat WHERE NIK = ?", [nik], (err, results) => {
     if (err) return res.status(500).json({ message: "Gagal mengambil data lama" });
     if (results.length === 0)
       return res.status(404).json({ message: "Data jemaat tidak ditemukan" });
 
-    const oldData = results[0];
+    const old = results[0];
 
-    // Kalau nomorTelepon baru kosong/null, gunakan yang lama
-    if (!nomorTelepon || nomorTelepon.trim() === "") {
-      nomorTelepon = oldData.nomorTelepon;
-    }
+    // 🧩 Gunakan data lama kalau yang baru tidak dikirim
+    const updatedData = {
+      namaLengkap: namaLengkap || old.namaLengkap,
+      tempatLahir: tempatLahir || old.tempatLahir,
+      tanggalLahir: tanggalLahir
+        ? tanggalLahir.split("T")[0]
+        : old.tanggalLahir,
+      jenisKelamin: jenisKelamin || old.jenisKelamin,
+      agama: agama || old.agama,
+      golonganDarah: golonganDarah || old.golonganDarah,
+      wargaNegara: wargaNegara || old.wargaNegara,
+      nomorTelepon: nomorTelepon || old.nomorTelepon,
+      alamat: alamat || old.alamat,
+      foto: old.foto,
+    };
 
-    let finalFoto = oldData.foto;
+    // 🖼️ Update file foto kalau ada
     if (req.files?.foto?.[0]) {
-      finalFoto = path
+      updatedData.foto = path
         .relative(process.cwd(), req.files.foto[0].path)
         .replace(/\\/g, "/");
     }
 
-    const updateQuery = `
+    // 🔧 Lakukan UPDATE ke DB
+    const query = `
       UPDATE dataJemaat
       SET 
         namaLengkap=?, tempatLahir=?, tanggalLahir=?, jenisKelamin=?, agama=?, golonganDarah=?,
@@ -92,18 +99,18 @@ export const updateJemaat = (req, res) => {
     `;
 
     db.query(
-      updateQuery,
+      query,
       [
-        namaLengkap,
-        tempatLahir,
-        tanggalLahir,
-        jenisKelamin,
-        agama,
-        golonganDarah,
-        wargaNegara,
-        nomorTelepon,
-        alamat,
-        finalFoto,
+        updatedData.namaLengkap,
+        updatedData.tempatLahir,
+        updatedData.tanggalLahir,
+        updatedData.jenisKelamin,
+        updatedData.agama,
+        updatedData.golonganDarah,
+        updatedData.wargaNegara,
+        updatedData.nomorTelepon,
+        updatedData.alamat,
+        updatedData.foto,
         nik,
       ],
       (err2) => {
@@ -112,7 +119,6 @@ export const updateJemaat = (req, res) => {
           return res.status(500).json({ message: "Gagal update data jemaat" });
         }
 
-        // Sertifikat (tetap sama)
         res.json({ message: "✅ Data jemaat berhasil diperbarui" });
       }
     );
