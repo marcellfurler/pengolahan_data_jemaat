@@ -51,7 +51,7 @@ const TabelDataJemaat = () => {
                 {dataJemaat.map((data, index) => (
                   <tr key={index} style={{ fontSize: '0.9rem' }}>
                     <td>{index + 1}</td>
-                    <td>{data.nama}</td>
+                    <td>{data.namaLengkap}</td>
                     <td>
                       {data.tempatLahir}, {new Date(data.tanggalLahir).toLocaleDateString("id-ID")}
                     </td>
@@ -62,7 +62,7 @@ const TabelDataJemaat = () => {
                       {data.statusSidi === 'Sidi' ? (
                         <Link 
                           to="/sertifikat-sidi" 
-                          state={{ nik: data.NIK, nama: data.nama }} // ✅ kirim 'nik' kecil
+                          state={{ nik: data.NIK, Lengkap: data.namaLengkap }} // ✅ kirim 'nik' kecil
                           className="text-primary"
                           onClick={() => console.log("🔗 Mengirim NIK (Sidi):", data.NIK)}
                         >
@@ -78,7 +78,7 @@ const TabelDataJemaat = () => {
                       {data.statusBaptis === 'Baptis' ? (
                         <Link 
                           to="/sertifikat-baptis"
-                          state={{ nik: data.NIK, nama: data.nama }} 
+                          state={{ nik: data.NIK, namaLengkap: data.namaLengkap }} 
                           className="text-primary"
                           onClick={() => console.log("🔗 Mengirim NIK:", data.NIK)}
                         >
@@ -93,7 +93,7 @@ const TabelDataJemaat = () => {
                       {data.statusNikah === 'Menikah' ? (
                       <Link 
                         to="/sertifikat-nikah" 
-                        state={{ nik: data.NIK, nama: data.nama }} 
+                        state={{ nik: data.NIK, namaLengkap: data.namaLengkap }} 
                         className="text-primary"
                         onClick={() => console.log("🔗 Mengirim NIK:", data.NIK)}
                       >

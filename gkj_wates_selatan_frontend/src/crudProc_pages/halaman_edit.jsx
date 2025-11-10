@@ -18,7 +18,7 @@ const EditJemaat = () => {
   const [formData, setFormData] = useState(
     state?.data || {
       NIK: "",
-      nama: "",
+      namaLengkap: "",
       tempatLahir: "",
       tanggalLahir: "",
       jenisKelamin: "",
@@ -130,8 +130,8 @@ const EditJemaat = () => {
                 <label className="form-label fw-bold">Nama Lengkap</label>
                 <input
                   type="text"
-                  name="nama"
-                  value={formData.nama}
+                  name="namaLengkap"
+                  value={formData.namaLengkap}
                   onChange={handleChange}
                   className="form-control"
                   required

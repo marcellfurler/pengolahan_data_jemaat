@@ -25,7 +25,7 @@ const DetailListItem = ({ label, value }) => (
 const DetailJemaat = ({ data }) => {
   const dataPribadi = [
     { label: 'NIK', value: data.NIK || '-' },
-    { label: 'Nama Lengkap', value: data.nama || '-' },
+    { label: 'Nama Lengkap', value: data.namaLengkap || '-' },
     { label: 'TTL', value: `${data.tempatLahir || '-'}, ${data.tanggalLahir || data.ttl || '-'}` },
     { label: 'Jenis Kelamin', value: data.jenisKelamin || '-' },
     { label: 'Agama', value: data.agama || '-' },
@@ -97,7 +97,7 @@ const DetailJemaat = ({ data }) => {
                 style={{ width: '150px', height: '150px', objectFit: 'cover' }}
               />
 
-              <h5 className="fw-bold  mb-1" style={{ color: "#004d97" }}>{data.nama || 'Nama Jemaat'}</h5>
+              <h5 className="fw-bold  mb-1" style={{ color: "#004d97" }}>{data.namaLengkap || 'Nama Jemaat'}</h5>
               <p className="text-muted small mb-0" >{data.namaPelayanan || '-'}</p>
               <p className="text-muted small">Pepanthan: {data.namaPepanthan || '-'}</p>
             </div>

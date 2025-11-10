@@ -10,7 +10,7 @@ const HalamanTambahDataBaru = () => {
   const [step, setStep] = useState(1);
   const [previewFoto, setPreviewFoto] = useState(null);
   const [formData, setFormData] = useState({
-    nama: "",
+    namalengkap: "",
     nik: "",
     alamat: "",
     tempatLahir: "",
@@ -172,7 +172,7 @@ const HalamanTambahDataBaru = () => {
                     type="text"
                     name="nama"
                     className="form-control"
-                    value={formData.nama}
+                    value={formData.namaLengkap}
                     onChange={handleChange}
                     required
                   />
