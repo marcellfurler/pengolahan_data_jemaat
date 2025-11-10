@@ -34,12 +34,12 @@ const DetailJemaat = ({ data }) => {
   ];
 
   const dataKontak = [
-    { label: 'No. Telepon', value: data.nomorTelepon || data.kontak || '-' },
+    { label: 'No. Telepon', value: data.telepon || data.kontak || '-' },
     { label: 'Alamat', value: data.alamat || '-' },
   ];
 
   const dataGerejawi = [
-    { label: 'Pepanthan', value: data.namaPepanthan || '-' },
+    { label: 'Pepanthan', value: data.pepanthan || '-' },
     { label: 'Status Sidi', value: data.statusSidi || '-' },
     { label: 'Status Baptis', value: data.statusBaptis || '-' },
     { label: 'Status Nikah', value: data.statusNikah || '-' },
@@ -91,14 +91,15 @@ const DetailJemaat = ({ data }) => {
             {/* FOTO */}
             <div className="col-12 col-lg-4 p-4 border-end d-flex flex-column align-items-center bg-light">
               <img
-                src={data.foto || "https://placehold.co/150x150/004d99/ffffff?text=FOTO"}
+                src={data.foto ? `http://localhost:5000/${data.foto}` : "https://placehold.co/150x150/004d99/ffffff?text=FOTO"}
                 alt="Foto Profil Jemaat"
                 className="img-fluid rounded-circle shadow mb-3"
                 style={{ width: '150px', height: '150px', objectFit: 'cover' }}
               />
+
               <h5 className="fw-bold  mb-1" style={{ color: "#004d97" }}>{data.nama || 'Nama Jemaat'}</h5>
               <p className="text-muted small mb-0" >{data.namaPelayanan || '-'}</p>
-              <p className="text-muted small">Pepanthan: {data.namaPepanthan || '-'}</p>
+              <p className="text-muted small">Pepanthan: {data.pepanthan || '-'}</p>
             </div>
 
             {/* DATA DETAIL */}

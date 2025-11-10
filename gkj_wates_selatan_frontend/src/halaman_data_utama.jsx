@@ -56,7 +56,7 @@ const TabelDataJemaat = () => {
                       {data.tempatLahir}, {new Date(data.tanggalLahir).toLocaleDateString("id-ID")}
                     </td>
 
-                    <td>{data.namaPepanthan || '-'}</td>
+                    <td>{data.pepanthan || '-'}</td>
 
                     <td>
                       {data.statusSidi === 'Sidi' ? (
@@ -122,9 +122,15 @@ const TabelDataJemaat = () => {
                     </td>
 
                     <td>
-                      <Link to={`/edit`} className="text-primary" title="Edit Data">
+                      <Link 
+                        to="/edit" 
+                        state={{ data }} // ✅ kirim seluruh data jemaat ke halaman edit
+                        className="text-primary"
+                        title="Edit Data"
+                      >
                         edit
                       </Link>
+
                     </td>
                   </tr>
                 ))}
