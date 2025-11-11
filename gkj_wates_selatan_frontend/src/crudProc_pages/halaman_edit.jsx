@@ -31,7 +31,7 @@ const EditJemaat = () => {
       statusSidi: "",
       statusBaptis: "",
       statusNikah: "",
-      statusPelayanan: "",
+      namaPelayanan: "",
       foto: "",
     }
   );
@@ -59,15 +59,15 @@ const EditJemaat = () => {
   // 🔹 Submit ke backend
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const nik = formData.NIK || formData.nik;
     const formDataToSend = new FormData();
 
+    // Append semua field
     for (const key in formData) {
       formDataToSend.append(key, formData[key]);
     }
 
-    // Tentukan jenis status yang baru diaktifkan
+    // Tentukan statusType untuk upload sertifikat
     if (initialStatus.baptis !== "Baptis" && formData.statusBaptis === "Baptis")
       formDataToSend.append("statusType", "baptis");
     else if (initialStatus.sidi !== "Sidi" && formData.statusSidi === "Sidi")
@@ -75,6 +75,7 @@ const EditJemaat = () => {
     else if (initialStatus.nikah !== "Menikah" && formData.statusNikah === "Menikah")
       formDataToSend.append("statusType", "nikah");
 
+    // Sertifikat
     if (selectedFile) formDataToSend.append("sertifikat", selectedFile);
 
     try {
@@ -95,6 +96,7 @@ const EditJemaat = () => {
       console.error("❌ Error saat update:", err);
     }
   };
+
 
   return (
     <>
@@ -146,14 +148,7 @@ const EditJemaat = () => {
                   className="form-control"
                 />
 
-                <label className="form-label fw-bold mt-3">Tanggal Lahir</label>
-                <input
-                  type="date"
-                  name="tanggalLahir"
-                  value={formData.tanggalLahir?.substring(0, 10) || ""}
-                  onChange={handleChange}
-                  className="form-control"
-                />
+                
 
                 <label className="form-label fw-bold mt-3">Jenis Kelamin</label>
                 <select
@@ -175,6 +170,26 @@ const EditJemaat = () => {
                   onChange={handleChange}
                   className="form-control"
                 />
+
+                <label className="form-label fw-bold mt-3">Nama Pekerjaan</label>
+                <input
+                  type="text"
+                  name="namaPekerjaan"
+                  value={formData.namaPekerjaan || ""}
+                  onChange={handleChange}
+                  className="form-control"
+                />
+
+                <label className="form-label fw-bold mt-3">Jabatan</label>
+                <input
+                  type="text"
+                  name="jabatan"
+                  value={formData.jabatan || ""}
+                  onChange={handleChange}
+                  className="form-control"
+                />
+
+                
               </div>
 
               {/* Kolom kanan */}
@@ -193,6 +208,15 @@ const EditJemaat = () => {
                   <option value="B">B</option>
                 </select>
 
+                <label className="form-label fw-bold mt-3">Tanggal Lahir</label>
+                <input
+                  type="date"
+                  name="tanggalLahir"
+                  value={formData.tanggalLahir?.substring(0, 10) || ""}
+                  onChange={handleChange}
+                  className="form-control"
+                />
+
                 <label className="form-label fw-bold mt-3">Telepon</label>
                 <input
                   type="text"
@@ -204,27 +228,16 @@ const EditJemaat = () => {
 
 
                 <label className="form-label fw-bold mt-3">Alamat</label>
-                <textarea
+                <input
+                  type="text"
                   name="alamat"
                   value={formData.alamat}
                   onChange={handleChange}
                   className="form-control"
                   rows="3"
-                ></textarea>
+                ></input>
 
-                <label className="form-label fw-bold mt-3">Pepanthan</label>
-                <select
-                  name="namaPepanthan"
-                  value={formData.namaPepanthan}
-                  onChange={handleChange}
-                  className="form-select"
-                >
-                  <option value="">Pilih...</option>
-                  <option value="Induk Depok">Induk Depok</option>
-                  <option value="Triharjo">Triharjo</option>
-                  <option value="Wonogiri">Wonogiri</option>
-                  <option value="Galur">Galur</option>
-                </select>
+
 
                 <label className="form-label fw-bold mt-3">Foto (URL)</label>
                 <label className="form-label fw-bold mt-3">Foto Profil</label>
@@ -234,14 +247,49 @@ const EditJemaat = () => {
                   className="form-control"
                   onChange={(e) => setFormData({ ...formData, foto: e.target.files[0] })}
                 />
+
+                
               </div>
 
               {/* Status Gerejawi */}
               <div className="col-12">
                 <hr />
                 <h6 className="fw-bold text-primary mb-3">Status Gerejawi</h6>
+
+                {/* ===== BARIS ATAS: Pepanthan & Status Pelayanan ===== */}
+                <div className="row mb-3">
+                  {/* Pepanthan */}
+                  <div className="col-md-6">
+                    <label className="form-label fw-bold">Pepanthan</label>
+                    <select
+                      name="namaPepanthan"
+                      value={formData.namaPepanthan}
+                      onChange={handleChange}
+                      className="form-select"
+                    >
+                      <option value="">Pilih...</option>
+                      <option value="Induk Depok">Induk Depok</option>
+                      <option value="Triharjo">Triharjo</option>
+                      <option value="Wonogiri">Wonogiri</option>
+                      <option value="Galur">Galur</option>
+                    </select>
+                  </div>
+
+                  {/* Status Pelayanan */}
+                  <div className="col-md-6">
+                    <label className="form-label fw-bold">Status Pelayanan</label>
+                    <input
+                      type="text"
+                      name="namaPelayanan"
+                      value={formData.namaPelayanan}
+                      onChange={handleChange}
+                      className="form-control"
+                    />
+                  </div>
+                </div>
+
+                {/* ===== BARIS BAWAH: Baptis, Sidi, Nikah ===== */}
                 <div className="row">
-                  
                   {/* Baptis */}
                   <div className="col-md-4">
                     <label className="form-label fw-bold">Status Baptis</label>
@@ -255,13 +303,10 @@ const EditJemaat = () => {
                       <option value="Baptis">Baptis</option>
                     </select>
 
-                    {/* 🔹 Input sertifikat hanya muncul kalau awalnya belum baptis lalu diubah ke Baptis */}
                     {initialStatus.baptis !== "Baptis" &&
                       formData.statusBaptis === "Baptis" && (
                         <div className="mt-3">
-                          <label className="form-label fw-bold">
-                            Upload Sertifikat Baptis
-                          </label>
+                          <label className="form-label fw-bold">Upload Sertifikat Baptis</label>
                           <input
                             type="file"
                             accept="image/*,application/pdf"
@@ -288,9 +333,7 @@ const EditJemaat = () => {
                     {initialStatus.sidi !== "Sidi" &&
                       formData.statusSidi === "Sidi" && (
                         <div className="mt-3">
-                          <label className="form-label fw-bold">
-                            Upload Sertifikat Sidi
-                          </label>
+                          <label className="form-label fw-bold">Upload Sertifikat Sidi</label>
                           <input
                             type="file"
                             accept="image/*,application/pdf"
@@ -317,9 +360,7 @@ const EditJemaat = () => {
                     {initialStatus.nikah !== "Menikah" &&
                       formData.statusNikah === "Menikah" && (
                         <div className="mt-3">
-                          <label className="form-label fw-bold">
-                            Upload Sertifikat Nikah
-                          </label>
+                          <label className="form-label fw-bold">Upload Sertifikat Nikah</label>
                           <input
                             type="file"
                             accept="image/*,application/pdf"
@@ -331,6 +372,7 @@ const EditJemaat = () => {
                   </div>
                 </div>
               </div>
+
 
               {/* Tombol Simpan */}
               <div className="col-12 text-end mt-4">

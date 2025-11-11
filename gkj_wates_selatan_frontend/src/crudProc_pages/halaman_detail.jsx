@@ -26,11 +26,13 @@ const DetailJemaat = ({ data }) => {
   const dataPribadi = [
     { label: 'NIK', value: data.NIK || '-' },
     { label: 'Nama Lengkap', value: data.namaLengkap || '-' },
-    { label: 'TTL', value: `${data.tempatLahir || '-'}, ${data.tanggalLahir || data.ttl || '-'}` },
+    { label: 'TTL', value: `${data.tempatLahir || '-'}, ${data.tanggalLahir || '-'}` },
     { label: 'Jenis Kelamin', value: data.jenisKelamin || '-' },
     { label: 'Agama', value: data.agama || '-' },
     { label: 'Golongan Darah', value: data.golonganDarah || '-' },
     { label: 'Warga Negara', value: data.wargaNegara || '-' },
+    { label: 'Nama Pekerjaan', value: data.namaPekerjaan || '-' },
+    { label: 'Jabatan', value: data.jabatan || '-' }
   ];
 
   const dataKontak = [
@@ -110,6 +112,7 @@ const DetailJemaat = ({ data }) => {
                 {dataPribadi.map((item, index) => (
                   <DetailListItem key={`pribadi-${index}`} label={item.label} value={item.value} />
                 ))}
+
 
                 <li className="list-group-item bg-light fw-bold py-2">Kontak & Alamat</li>
                 {dataKontak.map((item, index) => (
