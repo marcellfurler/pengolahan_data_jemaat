@@ -25,49 +25,79 @@ const EditJemaat = () => {
       agama: "",
       golonganDarah: "",
       wargaNegara: "",
-      telepon: "",
+      nomorTelepon: "",
       alamat: "",
-      pepanthan: "",
+      namaPepanthan: "",
       statusSidi: "",
       statusBaptis: "",
       statusNikah: "",
       namaPelayanan: "",
+      namaPekerjaan: "",
+      jabatan: "",
       foto: "",
     }
   );
 
-  // ✅ file sertifikat baru
+  // ✅ Pendidikan dinamis
+  const [pendidikanList, setPendidikanList] = useState(
+    state?.data?.pendidikanList || [
+      { jenjangPendidikan: "", namaInstitusi: "", tahunLulus: "" },
+    ]
+  );
+
   const [selectedFile, setSelectedFile] = useState(null);
-  // ✅ simpan status awal (sebelum diubah)
   const [initialStatus, setInitialStatus] = useState({
     baptis: formData.statusBaptis,
     sidi: formData.statusSidi,
     nikah: formData.statusNikah,
   });
 
-  // 🔹 Update value form
+  // 🔹 Update form biasa
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // 🔹 Upload file
+  // 🔹 Update pendidikan dinamis
+  const handlePendidikanChange = (index, field, value) => {
+    const newList = [...pendidikanList];
+    newList[index][field] = value;
+    setPendidikanList(newList);
+  };
+
+  const addPendidikan = () => {
+    setPendidikanList([
+      ...pendidikanList,
+      { jenjangPendidikan: "", namaInstitusi: "", tahunLulus: "" },
+    ]);
+  };
+
+  const removePendidikan = (index) => {
+    const newList = [...pendidikanList];
+    newList.splice(index, 1);
+    setPendidikanList(newList);
+  };
+
+  // 🔹 Upload file sertifikat
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
   };
 
-  // 🔹 Submit ke backend
+  // 🔹 Submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const nik = formData.NIK || formData.nik;
+    const nik = formData.NIK;
     const formDataToSend = new FormData();
 
-    // Append semua field
+    // Append semua field jemaat
     for (const key in formData) {
       formDataToSend.append(key, formData[key]);
     }
 
-    // Tentukan statusType untuk upload sertifikat
+    // Append pendidikanList
+    formDataToSend.append("pendidikanList", JSON.stringify(pendidikanList));
+
+    // StatusType untuk sertifikat
     if (initialStatus.baptis !== "Baptis" && formData.statusBaptis === "Baptis")
       formDataToSend.append("statusType", "baptis");
     else if (initialStatus.sidi !== "Sidi" && formData.statusSidi === "Sidi")
@@ -75,7 +105,6 @@ const EditJemaat = () => {
     else if (initialStatus.nikah !== "Menikah" && formData.statusNikah === "Menikah")
       formDataToSend.append("statusType", "nikah");
 
-    // Sertifikat
     if (selectedFile) formDataToSend.append("sertifikat", selectedFile);
 
     try {
@@ -83,7 +112,6 @@ const EditJemaat = () => {
         method: "PUT",
         body: formDataToSend,
       });
-
       const data = await res.json();
 
       if (res.ok) {
@@ -97,7 +125,6 @@ const EditJemaat = () => {
     }
   };
 
-
   return (
     <>
       <NavbarComponent />
@@ -105,11 +132,7 @@ const EditJemaat = () => {
         <div className="card shadow border-0 mb-4" style={{ borderRadius: "12px" }}>
           <div
             className="card-header text-white d-flex align-items-center justify-content-center position-relative"
-            style={{
-              backgroundColor: "#004d97",
-              borderBottom: "none",
-              height: "60px",
-            }}
+            style={{ backgroundColor: "#004d97", borderBottom: "none", height: "60px" }}
           >
             <button
               type="button"
@@ -119,10 +142,7 @@ const EditJemaat = () => {
             >
               <FontAwesomeIcon icon={faArrowLeft} className="me-1" /> Kembali
             </button>
-
-            <h5 className="mb-0 fw-bold text-center flex-grow-1">
-              EDIT DATA JEMAAT
-            </h5>
+            <h5 className="mb-0 fw-bold text-center flex-grow-1">EDIT DATA JEMAAT</h5>
           </div>
 
           <div className="card-body p-4 bg-light">
@@ -147,8 +167,6 @@ const EditJemaat = () => {
                   onChange={handleChange}
                   className="form-control"
                 />
-
-                
 
                 <label className="form-label fw-bold mt-3">Jenis Kelamin</label>
                 <select
@@ -188,14 +206,12 @@ const EditJemaat = () => {
                   onChange={handleChange}
                   className="form-control"
                 />
-
-                
               </div>
 
               {/* Kolom kanan */}
               <div className="col-md-6">
                 <label className="form-label fw-bold">Golongan Darah</label>
-                 <select
+                <select
                   name="golonganDarah"
                   value={formData.golonganDarah}
                   onChange={handleChange}
@@ -221,25 +237,20 @@ const EditJemaat = () => {
                 <input
                   type="text"
                   name="nomorTelepon"
-                  value={formData.nomorTelepon || ""} // 👈 ini penting
+                  value={formData.nomorTelepon || ""}
                   onChange={handleChange}
                   className="form-control"
                 />
-
 
                 <label className="form-label fw-bold mt-3">Alamat</label>
                 <input
                   type="text"
                   name="alamat"
-                  value={formData.alamat}
+                  value={formData.alamat || ""}
                   onChange={handleChange}
                   className="form-control"
-                  rows="3"
-                ></input>
+                />
 
-
-
-                <label className="form-label fw-bold mt-3">Foto (URL)</label>
                 <label className="form-label fw-bold mt-3">Foto Profil</label>
                 <input
                   type="file"
@@ -247,18 +258,72 @@ const EditJemaat = () => {
                   className="form-control"
                   onChange={(e) => setFormData({ ...formData, foto: e.target.files[0] })}
                 />
+              </div>
 
-                
+              {/* Pendidikan Dinamis */}
+              <div className="col-12 mt-4">
+                <hr />
+                <h6 className="fw-bold text-primary mb-3">Pendidikan</h6>
+                {pendidikanList.map((pend, index) => (
+                  <div className="row g-2 mb-2 align-items-end" key={index}>
+                    <div className="col-md-4">
+                      <label className="form-label">Jenjang</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={pend.jenjangPendidikan}
+                        onChange={(e) =>
+                          handlePendidikanChange(index, "jenjangPendidikan", e.target.value)
+                        }
+                      />
+                    </div>
+                    <div className="col-md-5">
+                      <label className="form-label">Nama Institusi</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={pend.namaInstitusi}
+                        onChange={(e) =>
+                          handlePendidikanChange(index, "namaInstitusi", e.target.value)
+                        }
+                      />
+                    </div>
+                    <div className="col-md-2">
+                      <label className="form-label">Tahun Lulus</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={pend.tahunLulus}
+                        onChange={(e) =>
+                          handlePendidikanChange(index, "tahunLulus", e.target.value)
+                        }
+                      />
+                    </div>
+                    <div className="col-md-1">
+                      <button
+                        type="button"
+                        className="btn btn-danger"
+                        onClick={() => removePendidikan(index)}
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  className="btn btn-sm btn-primary mt-2"
+                  onClick={addPendidikan}
+                >
+                  + Tambah Pendidikan
+                </button>
               </div>
 
               {/* Status Gerejawi */}
-              <div className="col-12">
+              <div className="col-12 mt-4">
                 <hr />
                 <h6 className="fw-bold text-primary mb-3">Status Gerejawi</h6>
-
-                {/* ===== BARIS ATAS: Pepanthan & Status Pelayanan ===== */}
                 <div className="row mb-3">
-                  {/* Pepanthan */}
                   <div className="col-md-6">
                     <label className="form-label fw-bold">Pepanthan</label>
                     <select
@@ -274,8 +339,6 @@ const EditJemaat = () => {
                       <option value="Galur">Galur</option>
                     </select>
                   </div>
-
-                  {/* Status Pelayanan */}
                   <div className="col-md-6">
                     <label className="form-label fw-bold">Status Pelayanan</label>
                     <input
@@ -288,101 +351,54 @@ const EditJemaat = () => {
                   </div>
                 </div>
 
-                {/* ===== BARIS BAWAH: Baptis, Sidi, Nikah ===== */}
+                {/* Baptis / Sidi / Nikah */}
                 <div className="row">
-                  {/* Baptis */}
-                  <div className="col-md-4">
-                    <label className="form-label fw-bold">Status Baptis</label>
-                    <select
-                      name="statusBaptis"
-                      value={formData.statusBaptis}
-                      onChange={handleChange}
-                      className="form-select"
-                    >
-                      <option value="">Belum Baptis</option>
-                      <option value="Baptis">Baptis</option>
-                    </select>
+                  {["Baptis", "Sidi", "Nikah"].map((status, i) => (
+                    <div className="col-md-4" key={i}>
+                      <label className="form-label fw-bold">
+                        Status {status}
+                      </label>
+                      <select
+                        name={`status${status}`}
+                        value={formData[`status${status}`]}
+                        onChange={handleChange}
+                        className="form-select"
+                      >
+                        <option value="">
+                          {status === "Baptis"
+                            ? "Belum Baptis"
+                            : status === "Sidi"
+                            ? "Belum Sidi"
+                            : "Belum Nikah"}
+                        </option>
+                        <option value={status}>{status}</option>
+                      </select>
 
-                    {initialStatus.baptis !== "Baptis" &&
-                      formData.statusBaptis === "Baptis" && (
-                        <div className="mt-3">
-                          <label className="form-label fw-bold">Upload Sertifikat Baptis</label>
-                          <input
-                            type="file"
-                            accept="image/*,application/pdf"
-                            className="form-control"
-                            onChange={handleFileChange}
-                          />
-                        </div>
-                      )}
-                  </div>
-
-                  {/* Sidi */}
-                  <div className="col-md-4">
-                    <label className="form-label fw-bold">Status Sidi</label>
-                    <select
-                      name="statusSidi"
-                      value={formData.statusSidi}
-                      onChange={handleChange}
-                      className="form-select"
-                    >
-                      <option value="">Belum Sidi</option>
-                      <option value="Sidi">Sidi</option>
-                    </select>
-
-                    {initialStatus.sidi !== "Sidi" &&
-                      formData.statusSidi === "Sidi" && (
-                        <div className="mt-3">
-                          <label className="form-label fw-bold">Upload Sertifikat Sidi</label>
-                          <input
-                            type="file"
-                            accept="image/*,application/pdf"
-                            className="form-control"
-                            onChange={handleFileChange}
-                          />
-                        </div>
-                      )}
-                  </div>
-
-                  {/* Nikah */}
-                  <div className="col-md-4">
-                    <label className="form-label fw-bold">Status Nikah</label>
-                    <select
-                      name="statusNikah"
-                      value={formData.statusNikah}
-                      onChange={handleChange}
-                      className="form-select"
-                    >
-                      <option value="">Belum Nikah</option>
-                      <option value="Menikah">Menikah</option>
-                    </select>
-
-                    {initialStatus.nikah !== "Menikah" &&
-                      formData.statusNikah === "Menikah" && (
-                        <div className="mt-3">
-                          <label className="form-label fw-bold">Upload Sertifikat Nikah</label>
-                          <input
-                            type="file"
-                            accept="image/*,application/pdf"
-                            className="form-control"
-                            onChange={handleFileChange}
-                          />
-                        </div>
-                      )}
-                  </div>
+                      {initialStatus[status.toLowerCase()] !== status &&
+                        formData[`status${status}`] === status && (
+                          <div className="mt-3">
+                            <label className="form-label fw-bold">
+                              Upload Sertifikat {status}
+                            </label>
+                            <input
+                              type="file"
+                              accept="image/*,application/pdf"
+                              className="form-control"
+                              onChange={handleFileChange}
+                            />
+                          </div>
+                        )}
+                    </div>
+                  ))}
                 </div>
               </div>
-
 
               {/* Tombol Simpan */}
               <div className="col-12 text-end mt-4">
                 <button
                   type="submit"
                   className="btn fw-bold text-white px-4"
-                  style={{
-                    backgroundColor: "#004d97",
-                    borderRadius: "8px",
-                  }}
+                  style={{ backgroundColor: "#004d97", borderRadius: "8px" }}
                 >
                   <FontAwesomeIcon icon={faSave} className="me-2" />
                   Simpan Perubahan

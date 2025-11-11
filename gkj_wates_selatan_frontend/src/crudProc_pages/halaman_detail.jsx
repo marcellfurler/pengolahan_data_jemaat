@@ -35,6 +35,14 @@ const DetailJemaat = ({ data }) => {
     { label: 'Jabatan', value: data.jabatan || '-' }
   ];
 
+  const dataPendidikan = data.pendidikanList?.length
+  ? data.pendidikanList.map((pend, index) => ({
+      label: `Pendidikan ${pend.jenjangPendidikan}` || `Pendidikan ${index + 1}`,
+      value: `${pend.namaInstitusi || '-'} - ${pend.tahunLulus || '-'}`
+    }))
+  : [{ label: 'Pendidikan', value: data.pendidikan || '-' }];
+
+
   const dataKontak = [
     { label: 'No. Telepon', value: data.nomorTelepon || data.kontak || '-' },
     { label: 'Alamat', value: data.alamat || '-' },
@@ -112,6 +120,10 @@ const DetailJemaat = ({ data }) => {
                 {dataPribadi.map((item, index) => (
                   <DetailListItem key={`pribadi-${index}`} label={item.label} value={item.value} />
                 ))}
+                <li className="list-group-item bg-light fw-bold py-2">Pendidikan</li>
+                {dataPendidikan.map((item, index) => (
+                  <DetailListItem key={`pendidikan-${index}`} label={item.label} value={item.value} />
+                ))}
 
 
                 <li className="list-group-item bg-light fw-bold py-2">Kontak & Alamat</li>
@@ -123,6 +135,7 @@ const DetailJemaat = ({ data }) => {
                 {dataGerejawi.map((item, index) => (
                   <DetailListItem key={`gereja-${index}`} label={item.label} value={item.value} />
                 ))}
+
               </ul>
             </div>
           </div>

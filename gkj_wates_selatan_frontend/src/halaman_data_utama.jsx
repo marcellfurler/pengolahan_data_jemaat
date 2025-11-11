@@ -38,13 +38,13 @@ const TabelDataJemaat = () => {
                   <th>No</th>
                   <th>Nama Jemaat</th>
                   <th>Tempat, Tanggal Lahir</th>
+                  <th>Jenis Kelamin</th>
                   <th>Pepanthan</th>
                   <th>Status Sidi</th>
                   <th>Status Baptis</th>
                   <th>Status Pernikahan</th>
                   <th>Status Pelayanan</th>
                   <th>Inf. Lengkap</th>
-                  <th>Edit</th>
                 </tr>
               </thead>
               <tbody>
@@ -54,6 +54,10 @@ const TabelDataJemaat = () => {
                     <td>{data.namaLengkap}</td>
                     <td>
                       {data.tempatLahir}, {new Date(data.tanggalLahir).toLocaleDateString("id-ID")}
+                    </td>
+
+                    <td>
+                      {data.jenisKelamin || '-'}
                     </td>
 
                     <td>{data.namaPepanthan || '-'}</td>
@@ -121,17 +125,7 @@ const TabelDataJemaat = () => {
                       </Link>
                     </td>
 
-                    <td>
-                      <Link 
-                        to="/edit" 
-                        state={{ data }} // ✅ kirim seluruh data jemaat ke halaman edit
-                        className="text-primary"
-                        title="Edit Data"
-                      >
-                        edit
-                      </Link>
-
-                    </td>
+                    
                   </tr>
                 ))}
               </tbody>
