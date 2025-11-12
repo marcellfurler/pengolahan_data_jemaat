@@ -158,7 +158,7 @@ export const updateJemaat = (req, res) => {
           }
 
           // =====================================================
-          // PERBAIKAN UTAMA: Parsing pendidikanList dengan aman
+          // PARSING pendidikanList (campuran JSON & object)
           // =====================================================
           console.log("📦 req.body.pendidikanList diterima:", req.body.pendidikanList);
           console.log("📦 Tipe data:", typeof req.body.pendidikanList);
@@ -168,7 +168,6 @@ export const updateJemaat = (req, res) => {
           if (req.body.pendidikanList) {
             let raw = req.body.pendidikanList;
 
-            // Jika dikirim sebagai array campuran
             if (Array.isArray(raw)) {
               for (let item of raw) {
                 try {
@@ -197,6 +196,33 @@ export const updateJemaat = (req, res) => {
 
           console.log("✅ Parsed pendidikanList:", pendidikanList);
 
+          // =====================================================
+          // DELETE: Hapus pendidikan yang sudah tidak ada
+          // =====================================================
+          const [oldPendidikanRows] = await db.promise().query(
+            `SELECT kodeRiwayatPendidikan FROM dataRiwayatPendidikan WHERE NIK=?`,
+            [nik]
+          );
+          const oldIds = oldPendidikanRows.map((r) => r.kodeRiwayatPendidikan);
+          const newIds = pendidikanList
+            .filter((p) => p.kodeRiwayatPendidikan)
+            .map((p) => p.kodeRiwayatPendidikan);
+
+          const idsToDelete = oldIds.filter((id) => !newIds.includes(id));
+
+          if (idsToDelete.length > 0) {
+            console.log("🗑 Menghapus pendidikan lama:", idsToDelete);
+            await db
+              .promise()
+              .query(
+                `DELETE FROM dataRiwayatPendidikan WHERE kodeRiwayatPendidikan IN (?) AND NIK=?`,
+                [idsToDelete, nik]
+              );
+          }
+
+          // =====================================================
+          // UPDATE / INSERT pendidikan baru
+          // =====================================================
           if (Array.isArray(pendidikanList) && pendidikanList.length > 0) {
             for (const p of pendidikanList) {
               const { kodeRiwayatPendidikan, jenjangPendidikan, namaInstitusi, tahunLulus } = p;
@@ -220,6 +246,9 @@ export const updateJemaat = (req, res) => {
             console.log("⚠️ Tidak ada perubahan pendidikan — data lama tetap disimpan.");
           }
 
+          // =====================================================
+          // UPLOAD SERTIFIKAT (baptis, sidi, nikah)
+          // =====================================================
           if (req.body.statusType && sertifikatPath) {
             const type = req.body.statusType.toLowerCase();
 
@@ -242,7 +271,7 @@ export const updateJemaat = (req, res) => {
           }
 
           res.json({
-            message: "✅ Data jemaat & pendidikan berhasil diperbarui (parsing campuran diperbaiki)",
+            message: "✅ Data jemaat, pendidikan (update/insert/delete) berhasil diperbarui!",
           });
         } catch (error) {
           console.error("❌ Error saat update jemaat:", error);
