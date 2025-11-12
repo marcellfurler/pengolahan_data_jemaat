@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faSave, faArrowRight, faImage } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowLeft,
+  faSave,
+  faArrowRight,
+  faImage,
+} from "@fortawesome/free-solid-svg-icons";
 import { NavbarComponent } from "../components/NavbarComponent";
 import dataJemaat from "../data/dataJemaat.json";
 
@@ -10,7 +15,7 @@ const HalamanTambahDataBaru = () => {
   const [step, setStep] = useState(1);
   const [previewFoto, setPreviewFoto] = useState(null);
   const [formData, setFormData] = useState({
-    namalengkap: "",
+    namaLengkap: "",
     nik: "",
     alamat: "",
     tempatLahir: "",
@@ -30,7 +35,7 @@ const HalamanTambahDataBaru = () => {
     foto: "",
   });
 
-  // Fungsi ubah input
+  // Handle perubahan input
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name.includes(".")) {
@@ -47,7 +52,7 @@ const HalamanTambahDataBaru = () => {
     }
   };
 
-    const handleFotoUpload = (e) => {
+  const handleFotoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
@@ -59,11 +64,8 @@ const HalamanTambahDataBaru = () => {
     }
   };
 
-  // Step 1 → Step berikutnya
   const handleNext = (e) => {
     e.preventDefault();
-
-    // Jika dia petugas pelayanan
     if (
       formData.statusJemaat === "Pendeta" ||
       formData.statusJemaat === "Majelis" ||
@@ -75,13 +77,11 @@ const HalamanTambahDataBaru = () => {
     }
   };
 
-  // Step 2 → Step 3
   const handleNextAfterPelayanan = (e) => {
     e.preventDefault();
     setStep(3);
   };
 
-  // Tombol kembali
   const handleBack = (e) => {
     e.preventDefault();
     if (step === 2) setStep(1);
@@ -98,7 +98,6 @@ const HalamanTambahDataBaru = () => {
     }
   };
 
-  // Simpan data
   const handleSubmit = (e) => {
     e.preventDefault();
     const existingData = JSON.parse(localStorage.getItem("dataJemaat")) || dataJemaat;
@@ -108,10 +107,8 @@ const HalamanTambahDataBaru = () => {
     navigate("/data");
   };
 
-  // Progress bar
   const progress = step === 1 ? 33 : step === 2 ? 66 : 100;
 
-  // Kondisi untuk menampilkan form di Step 3
   const showNikah =
     formData.statusNikah === "Menikah" ||
     formData.statusNikah === "Cerai Gugat" ||
@@ -143,11 +140,10 @@ const HalamanTambahDataBaru = () => {
               ? "Form Data Pelayanan"
               : "Form Data Tambahan"}
           </h3>
-
           <div style={{ width: "80px" }}></div>
         </div>
 
-        {/* Indikator langkah */}
+        {/* Progress Bar */}
         <div className="mb-4">
           <div className="progress" style={{ height: "20px" }}>
             <div
@@ -161,125 +157,138 @@ const HalamanTambahDataBaru = () => {
         </div>
 
         <div className="card shadow p-4">
-          {/* STEP 1 – DATA UTAMA */}
+          {/* STEP 1 */}
           {step === 1 && (
             <form onSubmit={handleNext}>
+              {/* Informasi Diri */}
+              <h4 className="mb-3">Informasi Diri</h4>
               <div className="row">
-                {/* Data utama seperti sebelumnya */}
-                <div className="col-md-6 mb-3">
+                <div className="col-md-6">
                   <label className="form-label">Nama Lengkap</label>
                   <input
                     type="text"
-                    name="nama"
-                    className="form-control"
+                    name="namaLengkap"
+                    className="form-control mb-3"
                     value={formData.namaLengkap}
                     onChange={handleChange}
-                    required
                   />
-                </div>
 
-                <div className="col-md-6 mb-3">
-                  <label className="form-label">NIK</label>
-                  <input
-                    type="text"
-                    name="nik"
-                    className="form-control"
-                    value={formData.nik}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-
-                <div className="col-md-6 mb-3">
-                  <label className="form-label">Tempat Lahir</label>
+                  <label className="form-label ">Tempat Lahir</label>
                   <input
                     type="text"
                     name="tempatLahir"
-                    className="form-control"
+                    className="form-control mb-3"
                     value={formData.tempatLahir}
                     onChange={handleChange}
                   />
-                </div>
 
-                <div className="col-md-6 mb-3">
-                  <label className="form-label">Tanggal Lahir</label>
-                  <input
-                    type="date"
-                    name="tanggalLahir"
-                    className="form-control"
-                    value={formData.tanggalLahir}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="col-md-6 mb-3">
                   <label className="form-label">Alamat</label>
                   <input
                     type="text"
                     name="alamat"
-                    className="form-control"
+                    className="form-control mb-3"
                     value={formData.alamat}
                     onChange={handleChange}
                   />
                 </div>
 
-                <div className="col-md-3 mb-3">
-                  <label className="form-label">Jenis Kelamin</label>
-                  <select
-                    name="jenisKelamin"
-                    className="form-select"
-                    value={formData.jenisKelamin}
+                <div className="col-md-6">
+                  <label className="form-label">NIK</label>
+                  <input
+                    type="text"
+                    name="nik"
+                    className="form-control mb-3"
+                    value={formData.nik}
                     onChange={handleChange}
-                  >
-                    <option value="">-- Pilih --</option>
-                    <option value="Laki-laki">Laki-laki</option>
-                    <option value="Perempuan">Perempuan</option>
-                  </select>
-                </div>
-                {/* Input Foto */}
-                <div className="col-md-3 mb-3">
+                  />
+
+                  <label className="form-label">Tanggal Lahir</label>
+                  <input
+                    type="date"
+                    name="tanggalLahir"
+                    className="form-control mb-3"
+                    value={formData.tanggalLahir}
+                    onChange={handleChange}
+                  />
+
                   <label className="form-label">
                     <FontAwesomeIcon icon={faImage} className="me-2" />
                     Upload Foto Jemaat
                   </label>
                   <input
-                  name="foto"
                     type="file"
+                    name="foto"
                     accept="image/*"
-                    className="form-control"
+                    className="form-control mb-3"
                     onChange={handleFotoUpload}
                   />
+                  {previewFoto && (
+                    <img
+                      src={previewFoto}
+                      alt="Preview"
+                      className="img-thumbnail mt-2"
+                      style={{ width: "120px", height: "120px" }}
+                    />
+                  )}
                 </div>
+              </div>
 
-                <div className="col-md-6 mb-3">
-                  <label className="form-label">Agama</label>
-                  <select
-                    name="agama"
-                    className="form-select"
-                    value={formData.agama}
-                    onChange={handleChange}
-                  >
-                    <option value="">-- Pilih --</option>
-                    <option value="Kristen Protestan">Kristen Protestan</option>
-                  </select>
-                </div>
+              <hr />
 
-                <div className="col-md-6 mb-3">
+              {/* Kontak & Pendidikan */}
+              <h4 className="mb-3">Kontak & Pendidikan</h4>
+              <div className="row">
+                <div className="col-md-6">
                   <label className="form-label">Kontak</label>
                   <input
                     type="text"
                     name="kontak"
-                    className="form-control"
+                    className="form-control mb-3"
                     value={formData.kontak}
+                    onChange={handleChange}
+                  />
+
+                  <label className="form-label">Jenjang Pendidikan</label>
+                  <input
+                    type="text"
+                    name="jenjangPendidikan"
+                    className="form-control mb-3"
+                    value={formData.jenjangPendidikan}
                     onChange={handleChange}
                   />
                 </div>
 
-                <div className="col-md-6 mb-3">
+                <div className="col-md-6">
+                  <label className="form-label">Nama Institusi</label>
+                  <input
+                    type="text"
+                    name="namaInstitusi"
+                    className="form-control mb-3"
+                    value={formData.namaInstitusi}
+                    onChange={handleChange}
+                  />
+
+                  <label className="form-label">Tahun Lulus</label>
+                  <input
+                    type="text"
+                    name="tahunLulus"
+                    className="form-control mb-3"
+                    value={formData.tahunLulus}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
+              <hr />
+
+              {/* Gerejawi */}
+              <h4 className="mb-3">Informasi Gerejawi</h4>
+              <div className="row">
+                <div className="col-md-6">
                   <label className="form-label">Pepanthan</label>
                   <select
                     name="pepanthan"
-                    className="form-select"
+                    className="form-select mb-3"
                     value={formData.pepanthan}
                     onChange={handleChange}
                   >
@@ -289,29 +298,11 @@ const HalamanTambahDataBaru = () => {
                     <option value="Pepanthan Galur">Pepanthan Galur</option>
                     <option value="Pepanthan Wonogiri">Pepanthan Wonogiri</option>
                   </select>
-                </div>
 
-                <div className="col-md-6 mb-3">
-                  <label className="form-label">Status Jemaat</label>
-                  <select
-                    name="statusJemaat"
-                    className="form-select"
-                    value={formData.statusJemaat}
-                    onChange={handleChange}
-                  >
-                    <option value="">-- Pilih --</option>
-                    <option value="Jemaat Biasa">Jemaat Biasa</option>
-                    <option value="Pendeta">Pendeta</option>
-                    <option value="Majelis">Majelis</option>
-                    <option value="Koordinator Pelayanan">Koordinator Pelayanan</option>
-                  </select>
-                </div>
-
-                <div className="col-md-4 mb-3">
                   <label className="form-label">Status Nikah</label>
                   <select
                     name="statusNikah"
-                    className="form-select"
+                    className="form-select mb-3"
                     value={formData.statusNikah}
                     onChange={handleChange}
                   >
@@ -322,27 +313,11 @@ const HalamanTambahDataBaru = () => {
                     <option value="Cerai Talak">Cerai Talak</option>
                     <option value="Cerai Meninggal">Cerai Meninggal</option>
                   </select>
-                </div>
 
-                <div className="col-md-4 mb-3">
-                  <label className="form-label">Status Sidi</label>
-                  <select
-                    name="statusSidi"
-                    className="form-select"
-                    value={formData.statusSidi}
-                    onChange={handleChange}
-                  >
-                    <option value="">-- Pilih --</option>
-                    <option value="Sidi">Sidi</option>
-                    <option value="Belum Sidi">Belum Sidi</option>
-                  </select>
-                </div>
-
-                <div className="col-md-4 mb-3">
                   <label className="form-label">Status Baptis</label>
                   <select
                     name="statusBaptis"
-                    className="form-select"
+                    className="form-select mb-3"
                     value={formData.statusBaptis}
                     onChange={handleChange}
                   >
@@ -350,6 +325,42 @@ const HalamanTambahDataBaru = () => {
                     <option value="Baptis">Baptis</option>
                     <option value="Belum Baptis">Belum Baptis</option>
                   </select>
+
+                  
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label">Status Jemaat</label>
+                  <select
+                    name="statusJemaat"
+                    className="form-select mb-3"
+                    value={formData.statusJemaat}
+                    onChange={handleChange}
+                  >
+                    <option value="">-- Pilih --</option>
+                    <option value="Jemaat Biasa">Jemaat Biasa</option>
+                    <option value="Pendeta">Pendeta</option>
+                    <option value="Majelis">Majelis</option>
+                    <option value="Koordinator Pelayanan">
+                      Koordinator Pelayanan
+                    </option>
+                  </select>
+
+                  
+
+                  <label className="form-label">Status Sidi</label>
+                  <select
+                    name="statusSidi"
+                    className="form-select mb-3"
+                    value={formData.statusSidi}
+                    onChange={handleChange}
+                  >
+                    <option value="">-- Pilih --</option>
+                    <option value="Sidi">Sidi</option>
+                    <option value="Belum Sidi">Belum Sidi</option>
+                  </select>
+
+                  
                 </div>
               </div>
 
@@ -361,46 +372,42 @@ const HalamanTambahDataBaru = () => {
             </form>
           )}
 
-          {/* STEP 2 – DATA PELAYANAN */}
+          {/* STEP 2 */}
           {step === 2 && (
             <form onSubmit={handleNextAfterPelayanan}>
-              <h5 className="text-center flex-grow-1 mb-3">Form Data Pelayanan</h5>
+              <h4 className="mb-3 text-center">Form Data Pelayanan</h4>
               <div className="row">
-                <div className="col-md-6 mb-3">
+                <div className="col-md-6">
                   <label className="form-label">Tahun Pentahbisan</label>
                   <input
                     type="text"
                     name="dataPelayanan.tahunPentahbisan"
-                    className="form-control"
+                    className="form-control mb-3"
                     onChange={handleChange}
                   />
-                </div>
 
-                <div className="col-md-6 mb-3">
                   <label className="form-label">Riwayat Pendidikan</label>
                   <input
                     type="text"
                     name="dataPelayanan.riwayatPendidikan"
-                    className="form-control"
+                    className="form-control mb-3"
                     onChange={handleChange}
                   />
                 </div>
 
-                <div className="col-md-12 mb-3">
+                <div className="col-md-6">
                   <label className="form-label">Riwayat Pelayanan</label>
                   <textarea
                     name="dataPelayanan.riwayatPelayanan"
-                    className="form-control"
+                    className="form-control mb-3"
                     rows="3"
                     onChange={handleChange}
                   ></textarea>
-                </div>
 
-                <div className="col-md-6 mb-3">
                   <label className="form-label">Jabatan</label>
                   <select
                     name="dataPelayanan.jabatan"
-                    className="form-select"
+                    className="form-select mb-3"
                     onChange={handleChange}
                   >
                     <option value="">-- Pilih Jabatan --</option>
@@ -420,6 +427,7 @@ const HalamanTambahDataBaru = () => {
             </form>
           )}
 
+          {/* STEP 3 (akan dilanjutkan dengan pembagian 2 kolom untuk Nikah, Sidi, dan Baptis) */}
           {/* STEP 3 – DATA TAMBAHAN (DINAMIS) */}
           {step === 3 && (
             <form onSubmit={handleSubmit}>
