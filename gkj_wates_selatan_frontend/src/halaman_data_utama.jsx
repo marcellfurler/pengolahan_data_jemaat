@@ -94,7 +94,7 @@ const TabelDataJemaat = () => {
                     </td>
 
                     <td>
-                      {data.statusNikah === 'Menikah' ? (
+                      {data.statusNikah === 'Nikah' ? (
                       <Link 
                         to="/sertifikat-nikah" 
                         state={{ nik: data.NIK, namaLengkap: data.namaLengkap }} 
@@ -107,7 +107,7 @@ const TabelDataJemaat = () => {
 
 
                       ) : (
-                        <span>{data.statusNikah || 'Belum Menikah'}</span>
+                        <span>{data.statusNikah || 'Belum Nikah'}</span>
                       )}
                     </td>
 

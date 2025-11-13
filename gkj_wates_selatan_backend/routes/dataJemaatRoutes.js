@@ -21,7 +21,7 @@ const storage = multer.diskStorage({
       } else if (req.body.statusType === "nikah") {
         cb(null, path.join(__dirname, "../uploads/sertifikat/sertifikatNikah"));
       } else {
-        cb(null, path.join(__dirname, "../uploads/sertifikat"));
+        cb(null, path.join(__dirname, "../uploads/sertifikat/sertifikatUpdate"));
       }
     }
   },

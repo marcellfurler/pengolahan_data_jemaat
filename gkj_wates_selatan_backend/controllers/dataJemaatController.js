@@ -1,6 +1,7 @@
 // controllers/dataJemaatController.js
 import { db } from "../config/db.js";
 import path from "path";
+import fs from "fs";
 
 // ===================================================
 // AMBIL SEMUA DATA JEMAAT + RELASI
@@ -22,6 +23,9 @@ export const getAllJemaat = (req, res) => {
       b.statusBaptis,
       s.statusSidi,
       n.statusNikah,
+      b.sertifikatBaptis,
+      s.sertifikatSidi,
+      n.sertifikatNikah,
       p.namaPepanthan,        
       l.namaPelayanan,
       pe.namaPekerjaan,
@@ -41,18 +45,12 @@ export const getAllJemaat = (req, res) => {
   `;
 
   db.query(query, (err, results) => {
-    if (err) {
-      console.error("❌ Gagal mengambil data jemaat:", err);
-      return res.status(500).json({ message: "Gagal mengambil data jemaat" });
-    }
+    if (err) return res.status(500).json({ message: "Gagal mengambil data jemaat" });
 
     const jemaatMap = {};
     results.forEach((row) => {
       if (!jemaatMap[row.NIK]) {
-        jemaatMap[row.NIK] = {
-          ...row,
-          pendidikanList: [],
-        };
+        jemaatMap[row.NIK] = { ...row, pendidikanList: [] };
       }
 
       if (row.jenjangPendidikan) {
@@ -75,7 +73,7 @@ export const getAllJemaat = (req, res) => {
 };
 
 // ===================================================
-// UPDATE DATA JEMAAT LENGKAP (versi perbaikan aman)
+// UPDATE DATA JEMAAT LENGKAP
 // ===================================================
 export const updateJemaat = (req, res) => {
   const { nik } = req.params;
@@ -95,7 +93,7 @@ export const updateJemaat = (req, res) => {
     namaPelayanan,
   } = req.body;
 
-  if (tanggalLahir && tanggalLahir.includes("T")) {
+  if (tanggalLahir?.includes("T")) {
     tanggalLahir = tanggalLahir.split("T")[0];
   }
 
@@ -105,18 +103,15 @@ export const updateJemaat = (req, res) => {
       return res.status(404).json({ message: "Data jemaat tidak ditemukan" });
 
     const oldData = results[0];
-    nomorTelepon = nomorTelepon?.trim() ? nomorTelepon : oldData.nomorTelepon;
+    nomorTelepon = nomorTelepon?.trim() || oldData.nomorTelepon;
 
+    // FOTO
     let finalFoto = oldData.foto;
     if (req.files?.foto?.[0]) {
       finalFoto = path.relative(process.cwd(), req.files.foto[0].path).replace(/\\/g, "/");
     }
 
-    let sertifikatPath = null;
-    if (req.files?.sertifikat?.[0]) {
-      sertifikatPath = path.relative(process.cwd(), req.files.sertifikat[0].path).replace(/\\/g, "/");
-    }
-
+    // UPDATE DATA JEMAAT
     const updateJemaatQuery = `
       UPDATE dataJemaat
       SET namaLengkap=?, tempatLahir=?, tanggalLahir=?, jenisKelamin=?, agama=?, golonganDarah=?,
@@ -142,140 +137,144 @@ export const updateJemaat = (req, res) => {
         if (err2) return res.status(500).json({ message: "Gagal update data jemaat" });
 
         try {
+          const promisePool = db.promise();
+
+          // --- UPDATE/INSERT pepanthan ---
           if (namaPepanthan?.trim()) {
-            await db.promise().query(`UPDATE dataPepanthan SET namaPepanthan=? WHERE NIK=?`, [namaPepanthan, nik]);
+            const [rows] = await promisePool.query(`SELECT * FROM dataPepanthan WHERE NIK=?`, [nik]);
+            if (rows.length) {
+              await promisePool.query(`UPDATE dataPepanthan SET namaPepanthan=? WHERE NIK=?`, [namaPepanthan, nik]);
+            } else {
+              await promisePool.query(`INSERT INTO dataPepanthan (NIK, namaPepanthan) VALUES (?, ?)`, [nik, namaPepanthan]);
+            }
           }
 
+          // --- UPDATE/INSERT pelayanan ---
           if (namaPelayanan?.trim()) {
-            await db.promise().query(`UPDATE dataPelayanan SET namaPelayanan=? WHERE NIK=?`, [namaPelayanan, nik]);
+            const [rows] = await promisePool.query(`SELECT * FROM dataPelayanan WHERE NIK=?`, [nik]);
+            if (rows.length) {
+              await promisePool.query(`UPDATE dataPelayanan SET namaPelayanan=? WHERE NIK=?`, [namaPelayanan, nik]);
+            } else {
+              await promisePool.query(`INSERT INTO dataPelayanan (NIK, namaPelayanan) VALUES (?, ?)`, [nik, namaPelayanan]);
+            }
           }
 
+          // --- UPDATE/INSERT pekerjaan ---
           if (namaPekerjaan?.trim() || jabatan?.trim()) {
-            await db.promise().query(
-              `UPDATE dataPekerjaan SET namaPekerjaan=?, jabatan=? WHERE NIK=?`,
-              [namaPekerjaan || "", jabatan || "", nik]
-            );
+            const [rows] = await promisePool.query(`SELECT * FROM dataPekerjaan WHERE NIK=?`, [nik]);
+            if (rows.length) {
+              await promisePool.query(
+                `UPDATE dataPekerjaan SET namaPekerjaan=?, jabatan=? WHERE NIK=?`,
+                [namaPekerjaan || "", jabatan || "", nik]
+              );
+            } else {
+              await promisePool.query(
+                `INSERT INTO dataPekerjaan (NIK, namaPekerjaan, jabatan) VALUES (?, ?, ?)`,
+                [nik, namaPekerjaan || "", jabatan || ""]
+              );
+            }
           }
 
-          // =====================================================
-          // PARSING pendidikanList (campuran JSON & object)
-          // =====================================================
-          console.log("📦 req.body.pendidikanList diterima:", req.body.pendidikanList);
-          console.log("📦 Tipe data:", typeof req.body.pendidikanList);
-
+          // --- PARSING pendidikanList ---
           let pendidikanList = [];
-
           if (req.body.pendidikanList) {
             let raw = req.body.pendidikanList;
-
             if (Array.isArray(raw)) {
               for (let item of raw) {
                 try {
-                  if (typeof item === "string" && item.startsWith("[")) {
+                  if (typeof item === "string") {
                     const parsed = JSON.parse(item);
                     if (Array.isArray(parsed)) pendidikanList.push(...parsed);
-                  } else if (typeof item === "string" && item.startsWith("{")) {
-                    pendidikanList.push(JSON.parse(item));
+                    else pendidikanList.push(parsed);
                   } else if (typeof item === "object") {
                     pendidikanList.push(item);
                   }
-                } catch (e) {
-                  console.warn("⚠️ Gagal parse item pendidikan:", item);
-                }
+                } catch {}
               }
             } else if (typeof raw === "string") {
-              try {
-                pendidikanList = JSON.parse(raw);
-              } catch {
-                console.warn("⚠️ pendidikanList bukan JSON valid:", raw);
-              }
+              try { pendidikanList = JSON.parse(raw); } catch {}
             } else if (typeof raw === "object") {
               pendidikanList = [raw];
             }
           }
 
-          console.log("✅ Parsed pendidikanList:", pendidikanList);
-
-          // =====================================================
-          // DELETE: Hapus pendidikan yang sudah tidak ada
-          // =====================================================
-          const [oldPendidikanRows] = await db.promise().query(
+          // DELETE pendidikan lama
+          const [oldRows] = await promisePool.query(
             `SELECT kodeRiwayatPendidikan FROM dataRiwayatPendidikan WHERE NIK=?`,
             [nik]
           );
-          const oldIds = oldPendidikanRows.map((r) => r.kodeRiwayatPendidikan);
-          const newIds = pendidikanList
-            .filter((p) => p.kodeRiwayatPendidikan)
-            .map((p) => p.kodeRiwayatPendidikan);
-
-          const idsToDelete = oldIds.filter((id) => !newIds.includes(id));
-
-          if (idsToDelete.length > 0) {
-            console.log("🗑 Menghapus pendidikan lama:", idsToDelete);
-            await db
-              .promise()
-              .query(
-                `DELETE FROM dataRiwayatPendidikan WHERE kodeRiwayatPendidikan IN (?) AND NIK=?`,
-                [idsToDelete, nik]
-              );
+          const oldIds = oldRows.map(r => r.kodeRiwayatPendidikan);
+          const newIds = pendidikanList.filter(p => p.kodeRiwayatPendidikan).map(p => p.kodeRiwayatPendidikan);
+          const idsToDelete = oldIds.filter(id => !newIds.includes(id));
+          if (idsToDelete.length) {
+            await promisePool.query(
+              `DELETE FROM dataRiwayatPendidikan WHERE kodeRiwayatPendidikan IN (?) AND NIK=?`,
+              [idsToDelete, nik]
+            );
           }
 
-          // =====================================================
-          // UPDATE / INSERT pendidikan baru
-          // =====================================================
-          if (Array.isArray(pendidikanList) && pendidikanList.length > 0) {
-            for (const p of pendidikanList) {
-              const { kodeRiwayatPendidikan, jenjangPendidikan, namaInstitusi, tahunLulus } = p;
+          // UPDATE/INSERT pendidikan baru
+          for (const p of pendidikanList) {
+            const { kodeRiwayatPendidikan, jenjangPendidikan, namaInstitusi, tahunLulus } = p;
+            if (kodeRiwayatPendidikan) {
+              await promisePool.query(
+                `UPDATE dataRiwayatPendidikan SET jenjangPendidikan=?, namaInstitusi=?, tahunLulus=? WHERE kodeRiwayatPendidikan=? AND NIK=?`,
+                [jenjangPendidikan || "", namaInstitusi || "", tahunLulus || null, kodeRiwayatPendidikan, nik]
+              );
+            } else if (jenjangPendidikan?.trim() || namaInstitusi?.trim()) {
+              await promisePool.query(
+                `INSERT INTO dataRiwayatPendidikan (NIK, jenjangPendidikan, namaInstitusi, tahunLulus) VALUES (?, ?, ?, ?)`,
+                [nik, jenjangPendidikan || "", namaInstitusi || "", tahunLulus || null]
+              );
+            }
+          }
 
-              if (kodeRiwayatPendidikan) {
-                await db.promise().query(
-                  `UPDATE dataRiwayatPendidikan 
-                   SET jenjangPendidikan=?, namaInstitusi=?, tahunLulus=?
-                   WHERE kodeRiwayatPendidikan=? AND NIK=?`,
-                  [jenjangPendidikan?.trim() || "", namaInstitusi?.trim() || "", tahunLulus || null, kodeRiwayatPendidikan, nik]
-                );
-              } else if (jenjangPendidikan?.trim() || namaInstitusi?.trim()) {
-                await db.promise().query(
-                  `INSERT INTO dataRiwayatPendidikan (NIK, jenjangPendidikan, namaInstitusi, tahunLulus)
-                   VALUES (?, ?, ?, ?)`,
-                  [nik, jenjangPendidikan || "", namaInstitusi || "", tahunLulus || null]
-                );
+          // --- UPLOAD SERTIFIKAT & DELETE SEKALIGUS ---
+          const sertifikatTypes = ["baptis", "sidi", "nikah"];
+
+          // Parsing deleteStatuses sebelum loop
+          let deleteStatuses = req.body.deleteStatus;
+          if (typeof deleteStatuses === "string") {
+            try { deleteStatuses = JSON.parse(deleteStatuses); } catch { deleteStatuses = [deleteStatuses]; }
+          } else if (!Array.isArray(deleteStatuses)) deleteStatuses = [];
+
+          for (const t of sertifikatTypes) {
+            const columnMap = {
+              baptis: { table: "dataBaptis", status: "statusBaptis", sertifikat: "sertifikatBaptis", defaultValue: "Belum Baptis", value: "Baptis" },
+              sidi: { table: "dataSidi", status: "statusSidi", sertifikat: "sertifikatSidi", defaultValue: "Belum Sidi", value: "Sidi" },
+              nikah: { table: "dataNikah", status: "statusNikah", sertifikat: "sertifikatNikah", defaultValue: "Belum Nikah", value: "Nikah" },
+            };
+            const { table, status, sertifikat, defaultValue, value } = columnMap[t];
+
+            const toDelete = deleteStatuses.includes(t);
+
+            let filePath = null;
+            if (req.files?.[t]?.[0]) filePath = path.relative(process.cwd(), req.files[t][0].path).replace(/\\/g, "/");
+            else if (req.files?.sertifikat?.[0] && (!req.body.statusType || req.body.statusType.toLowerCase() === t))
+              filePath = path.relative(process.cwd(), req.files.sertifikat[0].path).replace(/\\/g, "/");
+
+            if (toDelete) {
+              // DELETE / reset sertifikat
+              await promisePool.query(
+                `INSERT INTO ${table} (NIK, ${status}, ${sertifikat}) VALUES (?, ?, ?)
+                 ON DUPLICATE KEY UPDATE ${status}=?, ${sertifikat}=?`,
+                [nik, defaultValue, null, defaultValue, null]
+              );
+            } else if (filePath) {
+              // UPLOAD sertifikat baru
+              const [rows] = await promisePool.query(`SELECT * FROM ${table} WHERE NIK=?`, [nik]);
+              if (rows.length) {
+                await promisePool.query(`UPDATE ${table} SET ${status}=?, ${sertifikat}=? WHERE NIK=?`, [value, filePath, nik]);
+              } else {
+                await promisePool.query(`INSERT INTO ${table} (NIK, ${status}, ${sertifikat}) VALUES (?, ?, ?)`, [nik, value, filePath]);
               }
             }
-          } else {
-            console.log("⚠️ Tidak ada perubahan pendidikan — data lama tetap disimpan.");
           }
 
-          // =====================================================
-          // UPLOAD SERTIFIKAT (baptis, sidi, nikah)
-          // =====================================================
-          if (req.body.statusType && sertifikatPath) {
-            const type = req.body.statusType.toLowerCase();
-
-            if (type === "baptis") {
-              await db.promise().query(
-                `UPDATE dataBaptis SET statusBaptis='Baptis', sertifikat=? WHERE NIK=?`,
-                [sertifikatPath, nik]
-              );
-            } else if (type === "sidi") {
-              await db.promise().query(
-                `UPDATE dataSidi SET statusSidi='Sidi', sertifikat=? WHERE NIK=?`,
-                [sertifikatPath, nik]
-              );
-            } else if (type === "nikah") {
-              await db.promise().query(
-                `UPDATE dataNikah SET statusNikah='Menikah', sertifikat=? WHERE NIK=?`,
-                [sertifikatPath, nik]
-              );
-            }
-          }
-
-          res.json({
-            message: "✅ Data jemaat, pendidikan (update/insert/delete) berhasil diperbarui!",
-          });
+          res.json({ message: "✅ Data jemaat berhasil diperbarui lengkap!" });
         } catch (error) {
           console.error("❌ Error saat update jemaat:", error);
-          res.status(500).json({ message: "❌ Gagal update data jemaat dan pendidikan" });
+          res.status(500).json({ message: "❌ Gagal update data jemaat" });
         }
       }
     );
