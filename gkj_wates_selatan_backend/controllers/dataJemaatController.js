@@ -151,11 +151,25 @@ export const updateJemaat = (req, res) => {
 
           // --- UPDATE/INSERT pelayanan ---
           if (namaPelayanan?.trim()) {
+            let namaPelayananStr = "";
+
+            if (Array.isArray(namaPelayanan)) {
+              namaPelayananStr = namaPelayanan.join(", ");
+            } else if (typeof namaPelayanan === "string") {
+              try {
+                const parsed = JSON.parse(namaPelayanan);
+                if (Array.isArray(parsed)) namaPelayananStr = parsed.join(", ");
+                else namaPelayananStr = parsed;
+              } catch {
+                namaPelayananStr = namaPelayanan;
+              }
+            }
+
             const [rows] = await promisePool.query(`SELECT * FROM dataPelayanan WHERE NIK=?`, [nik]);
             if (rows.length) {
-              await promisePool.query(`UPDATE dataPelayanan SET namaPelayanan=? WHERE NIK=?`, [namaPelayanan, nik]);
+              await promisePool.query(`UPDATE dataPelayanan SET namaPelayanan=? WHERE NIK=?`, [namaPelayananStr, nik]);
             } else {
-              await promisePool.query(`INSERT INTO dataPelayanan (NIK, namaPelayanan) VALUES (?, ?)`, [nik, namaPelayanan]);
+              await promisePool.query(`INSERT INTO dataPelayanan (NIK, namaPelayanan) VALUES (?, ?)`, [nik, namaPelayananStr]);
             }
           }
 
@@ -229,46 +243,34 @@ export const updateJemaat = (req, res) => {
             }
           }
 
-          // --- UPLOAD SERTIFIKAT & DELETE SEKALIGUS ---
-          const sertifikatTypes = ["baptis", "sidi", "nikah"];
-
-          // Parsing deleteStatuses sebelum loop
+          // --- UPLOAD SERTIFIKAT BAPTIS, SIDI, NIKAH ---
           let deleteStatuses = req.body.deleteStatus;
           if (typeof deleteStatuses === "string") {
             try { deleteStatuses = JSON.parse(deleteStatuses); } catch { deleteStatuses = [deleteStatuses]; }
           } else if (!Array.isArray(deleteStatuses)) deleteStatuses = [];
 
+          const sertifikatTypes = ["baptis", "sidi", "nikah"];
+          const columnMap = {
+            baptis: { table: "dataBaptis", status: "statusBaptis", sertifikat: "sertifikatBaptis", defaultValue: "Belum Baptis", value: "Baptis" },
+            sidi: { table: "dataSidi", status: "statusSidi", sertifikat: "sertifikatSidi", defaultValue: "Belum Sidi", value: "Sidi" },
+            nikah: { table: "dataNikah", status: "statusNikah", sertifikat: "sertifikatNikah", defaultValue: "Belum Nikah", value: "Nikah" },
+          };
+
           for (const t of sertifikatTypes) {
-            const columnMap = {
-              baptis: { table: "dataBaptis", status: "statusBaptis", sertifikat: "sertifikatBaptis", defaultValue: "Belum Baptis", value: "Baptis" },
-              sidi: { table: "dataSidi", status: "statusSidi", sertifikat: "sertifikatSidi", defaultValue: "Belum Sidi", value: "Sidi" },
-              nikah: { table: "dataNikah", status: "statusNikah", sertifikat: "sertifikatNikah", defaultValue: "Belum Nikah", value: "Nikah" },
-            };
             const { table, status, sertifikat, defaultValue, value } = columnMap[t];
+
+            let filePath = req.files?.[t]?.[0]
+              ? path.relative(process.cwd(), req.files[t][0].path).replace(/\\/g, "/")
+              : null;
 
             const toDelete = deleteStatuses.includes(t);
 
-            let filePath = null;
-            if (req.files?.[t]?.[0]) filePath = path.relative(process.cwd(), req.files[t][0].path).replace(/\\/g, "/");
-            else if (req.files?.sertifikat?.[0] && (!req.body.statusType || req.body.statusType.toLowerCase() === t))
-              filePath = path.relative(process.cwd(), req.files.sertifikat[0].path).replace(/\\/g, "/");
-
-            if (toDelete) {
-              // DELETE / reset sertifikat
-              await promisePool.query(
-                `INSERT INTO ${table} (NIK, ${status}, ${sertifikat}) VALUES (?, ?, ?)
-                 ON DUPLICATE KEY UPDATE ${status}=?, ${sertifikat}=?`,
-                [nik, defaultValue, null, defaultValue, null]
-              );
-            } else if (filePath) {
-              // UPLOAD sertifikat baru
-              const [rows] = await promisePool.query(`SELECT * FROM ${table} WHERE NIK=?`, [nik]);
-              if (rows.length) {
-                await promisePool.query(`UPDATE ${table} SET ${status}=?, ${sertifikat}=? WHERE NIK=?`, [value, filePath, nik]);
-              } else {
-                await promisePool.query(`INSERT INTO ${table} (NIK, ${status}, ${sertifikat}) VALUES (?, ?, ?)`, [nik, value, filePath]);
-              }
-            }
+            await promisePool.query(
+              `INSERT INTO ${table} (NIK, ${status}, ${sertifikat})
+               VALUES (?, ?, ?)
+               ON DUPLICATE KEY UPDATE ${status}=VALUES(${status}), ${sertifikat}=VALUES(${sertifikat})`,
+              [nik, toDelete ? defaultValue : value, toDelete ? null : filePath]
+            );
           }
 
           res.json({ message: "✅ Data jemaat berhasil diperbarui lengkap!" });
@@ -280,3 +282,205 @@ export const updateJemaat = (req, res) => {
     );
   });
 };
+
+// Pastikan folder sertifikat ada
+const ensureFolderExists = (folderPath) => {
+  if (!fs.existsSync(folderPath)) {
+    fs.mkdirSync(folderPath, { recursive: true });
+  }
+};
+
+
+
+// Tambah Jemaat
+export const tambahJemaat = (req, res) => {
+  console.log("BODY:", req.body);
+  console.log("FILES:", req.files);
+
+  try {
+    // =====================
+    // Ambil data dari body
+    // =====================
+      const {
+    namaLengkap,
+    nik,
+    alamat,
+    tempatLahir,
+    tanggalLahir,
+    jenisKelamin,
+    agama,
+    golonganDarah,
+    nomorTelepon,
+    pepanthan,
+    namaPelayanan, // <- ambil langsung
+    statusNikah,
+    statusSidi,
+    statusBaptis,
+    namaPekerjaan,
+    jabatan,
+  } = req.body;
+
+    // =====================
+    // Ambil file upload + atur path lengkap
+    // =====================
+    const foto = req.files?.foto?.[0] ? `uploads/fotoProfil/${req.files.foto[0].filename}` : null;
+    const sertifikatNikah = req.files?.sertifikatNikah?.[0] ? `uploads/sertifikat/nikah/${req.files.sertifikatNikah[0].filename}` : null;
+    const sertifikatSidi = req.files?.sertifikatSidi?.[0] ? `uploads/sertifikat/sidi/${req.files.sertifikatSidi[0].filename}` : null;
+    const sertifikatBaptis = req.files?.sertifikatBaptis?.[0] ? `uploads/sertifikat/baptis/${req.files.sertifikatBaptis[0].filename}` : null;
+
+    // =====================
+    // Parsing data dinamis
+    // =====================
+    const pendidikanList = req.body.pendidikan ? JSON.parse(req.body.pendidikan) : [];
+    const pelayanan = req.body.dataPelayanan ? JSON.parse(req.body.dataPelayanan) : {};
+
+    // =====================
+    // INSERT dataJemaat
+    // =====================
+    const queryJemaat = `
+      INSERT INTO dataJemaat 
+      (NIK, namaLengkap, tempatLahir, tanggalLahir, jenisKelamin, agama, golonganDarah, nomorTelepon, alamat, foto)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    db.query(
+      queryJemaat,
+      [nik, namaLengkap, tempatLahir, tanggalLahir, jenisKelamin, agama, golonganDarah, nomorTelepon, alamat, foto],
+      (err) => {
+        if (err) {
+          console.error("Error INSERT dataJemaat:", err);
+          return res.status(500).json({ message: "Gagal menambah data jemaat", err });
+        }
+
+        // =====================
+        // INSERT status nikah
+        // =====================
+        if (statusNikah) {
+          db.query(
+            `INSERT INTO dataNikah (NIK, statusNikah, sertifikatNikah) VALUES (?, ?, ?)`,
+            [nik, statusNikah, sertifikatNikah],
+            (err) => {
+              if (err) console.error("Error INSERT dataNikah:", err);
+            }
+          );
+        }
+
+        // =====================
+        // INSERT status sidi
+        // =====================
+        if (statusSidi) {
+          db.query(
+            `INSERT INTO dataSidi (NIK, statusSidi, sertifikatSidi) VALUES (?, ?, ?)`,
+            [nik, statusSidi, sertifikatSidi],
+            (err) => {
+              if (err) console.error("Error INSERT dataSidi:", err);
+            }
+          );
+        }
+
+        // =====================
+        // INSERT status baptis
+        // =====================
+        if (statusBaptis) {
+          db.query(
+            `INSERT INTO dataBaptis (NIK, statusBaptis, sertifikatBaptis) VALUES (?, ?, ?)`,
+            [nik, statusBaptis, sertifikatBaptis],
+            (err) => {
+              if (err) console.error("Error INSERT dataBaptis:", err);
+            }
+          );
+        }
+
+        // =====================
+        // INSERT pepanthan
+        // =====================
+        if (pepanthan) {
+          db.query(
+            `INSERT INTO dataPepanthan (NIK, namaPepanthan) VALUES (?, ?)`,
+            [nik, pepanthan],
+            (err) => {
+              if (err) console.error("Error INSERT dataPepanthan:", err);
+            }
+          );
+        }
+
+
+        // =====================
+        // INSERT pelayanan (jika Pendeta / Majelis / Koor)
+        // =====================
+        if (namaPelayanan) {
+          let namaPelayananStr = "";
+
+          if (Array.isArray(namaPelayanan)) {
+            // Ambil elemen pertama saja
+            namaPelayananStr = namaPelayanan[0];
+          } else if (typeof namaPelayanan === "string") {
+            try {
+              const parsed = JSON.parse(namaPelayanan); // parse JSON string
+              if (Array.isArray(parsed)) {
+                namaPelayananStr = parsed[0]; // ambil elemen pertama saja
+              } else {
+                namaPelayananStr = parsed; // string tunggal
+              }
+            } catch {
+              namaPelayananStr = namaPelayanan; // string biasa
+            }
+          }
+
+          // Hapus tanda kutip yang mungkin tersisa
+          namaPelayananStr = namaPelayananStr.replace(/^["']?(.*?)["']?$/, "$1");
+
+          const queryPelayanan = `
+            INSERT INTO dataPelayanan (NIK, namaPelayanan)
+            VALUES (?, ?)
+          `;
+          db.query(queryPelayanan, [nik, namaPelayananStr], (err) => {
+            if (err) console.error("Error INSERT dataPelayanan:", err);
+          });
+        }
+
+
+
+
+
+
+        // =====================
+        // INSERT PENDIDIKAN LIST
+        // =====================
+        pendidikanList.forEach((p) => {
+          db.query(
+            `INSERT INTO dataRiwayatPendidikan (NIK, jenjangPendidikan, namaInstitusi, tahunLulus)
+             VALUES (?, ?, ?, ?)`,
+            [nik, p.jenjangPendidikan, p.namaInstitusi, p.tahunLulus],
+            (err) => {
+              if (err) console.error("Error INSERT dataRiwayatPendidikan:", err);
+            }
+          );
+        });
+
+        // =====================
+        // INSERT PEKERJAAN
+        // =====================
+        if (namaPekerjaan) {
+          const queryPekerjaan = `
+            INSERT INTO dataPekerjaan (NIK, namaPekerjaan, jabatan)
+            VALUES (?, ?, ?)
+          `;
+          db.query(queryPekerjaan, [nik, namaPekerjaan, jabatan || ""], (err) => {
+            if (err) console.error("Error INSERT dataPekerjaan:", err);
+          });
+        }
+
+        // =====================
+        // RESPONSE SUCCESS
+        // =====================
+        return res.status(201).json({ message: "Data jemaat berhasil ditambahkan." });
+      }
+    );
+
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    return res.status(500).json({ message: "Terjadi kesalahan server", error });
+  }
+};
+

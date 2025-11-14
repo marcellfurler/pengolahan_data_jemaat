@@ -31,6 +31,7 @@ const DetailJemaat = ({ data }) => {
     { label: 'Agama', value: data.agama || '-' },
     { label: 'Golongan Darah', value: data.golonganDarah || '-' },
     { label: 'Warga Negara', value: data.wargaNegara || '-' },
+    { label: 'Alamat', value: data.alamat || '-' },
     { label: 'Nama Pekerjaan', value: data.namaPekerjaan || '-' },
     { label: 'Jabatan', value: data.jabatan || '-' }
   ];

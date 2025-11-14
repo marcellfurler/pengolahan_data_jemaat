@@ -267,7 +267,13 @@ const EditJemaat = () => {
                   </div>
                   <div className="col-md-6">
                     <label className="form-label fw-bold">Status Pelayanan</label>
-                    <input type="text" name="namaPelayanan" value={formData.namaPelayanan} onChange={handleChange} className="form-control" />
+                      <select name={`namaPelayanan`} value={formData[`namaPelayanan`]} onChange={handleChange} className="form-select">
+                        <option value="">--Pilih--</option>
+                        <option value="Jemaat">Jemaat</option>
+                        <option value="Pendeta">Pendeta</option>
+                        <option value="Majelis">Majelis</option>
+                        <option value="Koordinator Pelayanan">Koordinator Pelayanan</option>
+                      </select>
                   </div>
                 </div>
 

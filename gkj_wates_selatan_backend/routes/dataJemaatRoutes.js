@@ -1,6 +1,7 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 import * as dataJemaatController from "../controllers/dataJemaatController.js";
 
@@ -8,23 +9,37 @@ const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Konfigurasi folder upload
+// Pastikan folder ada
+function ensureFolderExists(folder) {
+  if (!fs.existsSync(folder)) {
+    fs.mkdirSync(folder, { recursive: true });
+  }
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
+    let folder = "";
+
     if (file.fieldname === "foto") {
-      cb(null, path.join(__dirname, "../uploads/fotoProfil"));
-    } else if (file.fieldname === "sertifikat") {
-      if (req.body.statusType === "sidi") {
-        cb(null, path.join(__dirname, "../uploads/sertifikat/sertifikatSidi"));
-      } else if (req.body.statusType === "baptis") {
-        cb(null, path.join(__dirname, "../uploads/sertifikat/sertifikatBaptis"));
-      } else if (req.body.statusType === "nikah") {
-        cb(null, path.join(__dirname, "../uploads/sertifikat/sertifikatNikah"));
-      } else {
-        cb(null, path.join(__dirname, "../uploads/sertifikat/sertifikatUpdate"));
-      }
+      folder = path.join(__dirname, "../uploads/fotoProfil");
+    } 
+    else if (file.fieldname === "sertifikatNikah") {
+      folder = path.join(__dirname, "../uploads/sertifikat/nikah");
+    } 
+    else if (file.fieldname === "sertifikatSidi") {
+      folder = path.join(__dirname, "../uploads/sertifikat/sidi");
+    } 
+    else if (file.fieldname === "sertifikatBaptis") {
+      folder = path.join(__dirname, "../uploads/sertifikat/baptis");
+    } 
+    else if (file.fieldname === "sertifikat") {
+      folder = path.join(__dirname, "../uploads/sertifikat/update");
     }
+
+    ensureFolderExists(folder);
+    cb(null, folder);
   },
+
   filename: (req, file, cb) => {
     const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
     cb(null, unique + path.extname(file.originalname));
@@ -33,14 +48,29 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Gunakan referensi dari objek import
+// =========================
+// ROUTES
+// =========================
+
 router.get("/", dataJemaatController.getAllJemaat);
+
+router.post(
+  "/",
+  upload.fields([
+    { name: "foto", maxCount: 1 },
+    { name: "sertifikatNikah", maxCount: 1 },
+    { name: "sertifikatSidi", maxCount: 1 },
+    { name: "sertifikatBaptis", maxCount: 1 },
+  ]),
+  dataJemaatController.tambahJemaat // <-- ganti createJemaat jadi tambahJemaat
+);
+
 
 router.put(
   "/:nik",
   upload.fields([
     { name: "foto", maxCount: 1 },
-    { name: "sertifikat", maxCount: 1 },
+    { name: "sertifikat", maxCount: 1 }, // untuk update status tertentu
   ]),
   dataJemaatController.updateJemaat
 );

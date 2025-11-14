@@ -23,8 +23,9 @@ const HalamanTambahDataBaru = () => {
     jenisKelamin: "",
     agama: "",
     nomorTelepon: "",
+    alamat: "",
     pepanthan: "",
-    statusJemaat: "",
+    namaPelayanan: "",
     statusSidi: "",
     statusBaptis: "",
     statusNikah: "",
@@ -55,14 +56,11 @@ const HalamanTambahDataBaru = () => {
   const handleFotoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewFoto(reader.result);
-        setFormData({ ...formData, foto: reader.result });
-      };
-      reader.readAsDataURL(file);
+      setPreviewFoto(URL.createObjectURL(file)); // untuk preview
+      setFormData({ ...formData, foto: file }); // simpan File object
     }
   };
+
 
   const handleNext = (e) => {
     e.preventDefault();
@@ -87,9 +85,7 @@ const HalamanTambahDataBaru = () => {
     if (step === 2) setStep(1);
     else if (step === 3) {
       if (
-        formData.statusJemaat === "Pendeta" ||
-        formData.statusJemaat === "Majelis" ||
-        formData.statusJemaat === "Koordinator Pelayanan"
+        formData.statusJemaat === "Pendeta"
       ) {
         setStep(2);
       } else {
@@ -114,18 +110,20 @@ const HalamanTambahDataBaru = () => {
       form.append("tanggalLahir", formData.tanggalLahir || "");
       form.append("jenisKelamin", formData.jenisKelamin || "");
       form.append("agama", formData.agama || "");
-      form.append("kontak", formData.nomorTelepon || "");
+      form.append("golonganDarah", formData.golonganDarah || "")
+      form.append("nomorTelepon", formData.nomorTelepon || "");
       form.append("pepanthan", formData.pepanthan || "");
-      form.append("statusJemaat", formData.statusJemaat || "");
+      form.append("namaPelayanan", formData.namaPelayanan || "");
       form.append("statusNikah", formData.statusNikah || "");
       form.append("statusSidi", formData.statusSidi || "");
       form.append("statusBaptis", formData.statusBaptis || "");
+      form.append("namaPekerjaan", formData.namaPekerjaan || "");
+      form.append("jabatan", formData.jabatan || "")
+      
 
       // === FOTO JEMAAT ===
       if (formData.foto instanceof File) {
         form.append("foto", formData.foto);
-      } else if (document.querySelector('input[name="foto"]').files[0]) {
-        form.append("foto", document.querySelector('input[name="foto"]').files[0]);
       }
 
       // === SERTIFIKAT NIKAH ===
@@ -142,9 +140,16 @@ const HalamanTambahDataBaru = () => {
       if (formData.dataBaptis?.sertifikat) {
         form.append("sertifikatBaptis", formData.dataBaptis.sertifikat);
       }
+      if (formData.pendidikan && formData.pendidikan.length > 0) {
+        form.append("pendidikan", JSON.stringify(formData.pendidikan));
+      }
+      if (formData.namaPelayanan) {
+        form.append("namaPelayanan", JSON.stringify(formData.namaPelayanan));
+      }
+
 
       // === KIRIM KE BACKEND ===
-      const res = await fetch("http://localhost:5000/dataJemaat", {
+      const res = await fetch("http://localhost:5000/api/jemaat", {
         method: "POST",
         body: form,
       });
@@ -164,15 +169,44 @@ const HalamanTambahDataBaru = () => {
     }
   };
 
+  // === PENDIDIKAN DINAMIS ===
+  const [pendidikanList, setPendidikanList] = useState([
+    { jenjangPendidikan: "", namaInstitusi: "", tahunLulus: "" },
+  ]);
+
+  const handlePendidikanChange = (index, field, value) => {
+    const updated = [...pendidikanList];
+    updated[index][field] = value;
+    setPendidikanList(updated);
+
+    // masukkan juga ke formData supaya ikut terkirim
+    setFormData({
+      ...formData,
+      pendidikan: updated,
+    });
+  };
+
+  const addPendidikan = () => {
+    const newList = [
+      ...pendidikanList,
+      { jenjangPendidikan: "", namaInstitusi: "", tahunLulus: "" },
+    ];
+    setPendidikanList(newList);
+    setFormData({ ...formData, pendidikan: newList });
+  };
+
+  const removePendidikan = (index) => {
+    const newList = pendidikanList.filter((_, i) => i !== index);
+    setPendidikanList(newList);
+    setFormData({ ...formData, pendidikan: newList });
+  };
+
 
 
   const progress = step === 1 ? 33 : step === 2 ? 66 : 100;
 
   const showNikah =
-    formData.statusNikah === "Menikah" ||
-    formData.statusNikah === "Cerai Gugat" ||
-    formData.statusNikah === "Cerai Talak" ||
-    formData.statusNikah === "Cerai Meninggal";
+    formData.statusNikah === "Nikah" 
 
   const showSidi = formData.statusSidi === "Sidi";
   const showBaptis = formData.statusBaptis === "Baptis";
@@ -249,6 +283,27 @@ const HalamanTambahDataBaru = () => {
                     value={formData.alamat}
                     onChange={handleChange}
                   />
+
+                  <label className="form-label">Nomor Telepon</label>
+                  <input
+                    type="text"
+                    name="nomorTelepon"
+                    className="form-control mb-3"
+                    value={formData.nomorTelepon}
+                    onChange={handleChange}
+                    placeholder="0812xxxxxxx"
+                  />
+
+                  <label className="form-label">Agama</label>
+                  <select name="agama" value={formData.agama} onChange={handleChange} className="form-select mb-3">
+                    <option value="">Pilih...</option>
+                    <option value="Kristen">Kristen</option>
+                    <option value="Katolik">Katolik</option>
+                    <option value="Hindu">Hindu</option>
+                    <option value="Budha">Budha</option>
+                    <option value="Islam">Islam</option>
+                    <option value="Konghucu">Konghucu</option>
+                  </select>
                 </div>
 
                 <div className="col-md-6">
@@ -270,6 +325,31 @@ const HalamanTambahDataBaru = () => {
                     onChange={handleChange}
                   />
 
+                  
+
+
+                  <label className="form-label">Jenis Kelamin</label>
+                  <select
+                    name="jenisKelamin"
+                    className="form-select mb-3"
+                    value={formData.jenisKelamin}
+                    onChange={handleChange}
+                  >
+                    <option value="">-- Pilih --</option>
+                    <option value="Laki-Laki">Laki-laki</option>
+                    <option value="Perempuan">Perempuan</option>
+                  </select>
+
+                  <label className="form-label">Golongan Darah</label>
+                  <select name="golonganDarah" value={formData.golonganDarah} onChange={handleChange} className="form-select mb-3">
+                    <option value="">Pilih...</option>
+                    <option value="A">A</option>
+                    <option value="AB">AB</option>
+                    <option value="O">O</option>
+                    <option value="B">B</option>
+                  </select>
+
+
                   <label className="form-label">
                     <FontAwesomeIcon icon={faImage} className="me-2" />
                     Upload Foto Jemaat
@@ -277,7 +357,7 @@ const HalamanTambahDataBaru = () => {
                   <input
                     type="file"
                     name="foto"
-                    accept="image/*"
+                    accept="image/*,application/pdf"
                     className="form-control mb-3"
                     onChange={handleFotoUpload}
                   />
@@ -288,55 +368,116 @@ const HalamanTambahDataBaru = () => {
                       className="img-thumbnail mt-2"
                       style={{ width: "120px", height: "120px" }}
                     />
+
+                    
                   )}
                 </div>
               </div>
 
               <hr />
-
-              {/* Kontak & Pendidikan */}
-              <h4 className="mb-3">Kontak & Pendidikan</h4>
+                  
+            <h4 className="mb-3">Pekerjaan</h4>
               <div className="row">
                 <div className="col-md-6">
-                  <label className="form-label">Kontak</label>
+                  <label className="form-label">Nama Pekerjaan</label>
                   <input
                     type="text"
-                    name="nomorTelepon"
+                    name="namaPekerjaan"
                     className="form-control mb-3"
-                    value={formData.nomorTelepon}
+                    value={formData.namaPekerjaan}
                     onChange={handleChange}
                   />
 
-                  <label className="form-label">Jenjang Pendidikan</label>
+                  <label className="form-label ">Jabatan</label>
                   <input
                     type="text"
-                    name="jenjangPendidikan"
+                    name="jabatan"
                     className="form-control mb-3"
-                    value={formData.jenjangPendidikan}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="col-md-6">
-                  <label className="form-label">Nama Institusi</label>
-                  <input
-                    type="text"
-                    name="namaInstitusi"
-                    className="form-control mb-3"
-                    value={formData.namaInstitusi}
+                    value={formData.jabatan}
                     onChange={handleChange}
                   />
 
-                  <label className="form-label">Tahun Lulus</label>
-                  <input
-                    type="text"
-                    name="tahunLulus"
-                    className="form-control mb-3"
-                    value={formData.tahunLulus}
-                    onChange={handleChange}
-                  />
                 </div>
               </div>
+              <hr />
+              
+
+
+            {/* Pendidikan Dinamis */}
+            <div className="col-12 mt-4">
+              
+              <h4 className="mb-3">Pendidikan</h4>
+
+              {pendidikanList.map((pend, index) => (
+                <div className="row g-2 mb-3 align-items-end" key={index}>
+                  
+                  {/* Jenjang */}
+                  <div className="col-md-3">
+                    <label className="form-label">Jenjang</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="SMA / S1 / S2"
+                      value={pend.jenjangPendidikan}
+                      onChange={(e) =>
+                        handlePendidikanChange(index, "jenjangPendidikan", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  {/* Institusi */}
+                  <div className="col-md-6">
+                    <label className="form-label">Nama Institusi</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Nama sekolah / universitas"
+                      value={pend.namaInstitusi}
+                      onChange={(e) =>
+                        handlePendidikanChange(index, "namaInstitusi", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  {/* Tahun */}
+                  <div className="col-md-2">
+                    <label className="form-label">Tahun Lulus</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      placeholder="2020"
+                      min="1950"
+                      max={new Date().getFullYear()}
+                      value={pend.tahunLulus}
+                      onChange={(e) =>
+                        handlePendidikanChange(index, "tahunLulus", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  {/* Hapus */}
+                  <div className="col-md-1">
+                    <button
+                      type="button"
+                      className="btn btn-danger"
+                      onClick={() => removePendidikan(index)}
+                    >
+                      &times;
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              <button
+                type="button"
+                className="btn btn-sm btn-primary mt-2"
+                onClick={addPendidikan}
+              >
+                + Tambah Pendidikan
+              </button>
+            </div>
+
+
 
               <hr />
 
@@ -352,10 +493,10 @@ const HalamanTambahDataBaru = () => {
                     onChange={handleChange}
                   >
                     <option value="">-- Pilih --</option>
-                    <option value="Pepanthan Induk Depok">Pepanthan Induk Depok</option>
-                    <option value="Pepanthan Triharjo">Pepanthan Triharjo</option>
-                    <option value="Pepanthan Galur">Pepanthan Galur</option>
-                    <option value="Pepanthan Wonogiri">Pepanthan Wonogiri</option>
+                    <option value="Induk Depok">Induk Depok</option>
+                    <option value="Triharjo">Triharjo</option>
+                    <option value="Galur">Galur</option>
+                    <option value="Wonogiri">Wonogiri</option>
                   </select>
 
                   <label className="form-label">Status Nikah</label>
@@ -366,10 +507,9 @@ const HalamanTambahDataBaru = () => {
                     onChange={handleChange}
                   >
                     <option value="">-- Pilih --</option>
-                    <option value="Menikah">Menikah</option>
-                    <option value="Belum Menikah">Belum Menikah</option>
-                    <option value="Cerai Gugat">Cerai Gugat</option>
-                    <option value="Cerai Talak">Cerai Talak</option>
+                    <option value="Nikah">Nikah</option>
+                    <option value="Belum Nikah">Belum Nikah</option>
+                    <option value="Cerai Hidup">Cerai Hidup</option>
                     <option value="Cerai Meninggal">Cerai Meninggal</option>
                   </select>
 
@@ -391,21 +531,17 @@ const HalamanTambahDataBaru = () => {
                 <div className="col-md-6">
                   <label className="form-label">Status Jemaat</label>
                   <select
-                    name="statusJemaat"
+                    name="namaPelayanan"   // ini ganti
                     className="form-select mb-3"
-                    value={formData.statusJemaat}
+                    value={formData.namaPelayanan}
                     onChange={handleChange}
                   >
                     <option value="">-- Pilih --</option>
-                    <option value="Jemaat Biasa">Jemaat Biasa</option>
+                    <option value="Jemaat">Jemaat</option>
                     <option value="Pendeta">Pendeta</option>
                     <option value="Majelis">Majelis</option>
-                    <option value="Koordinator Pelayanan">
-                      Koordinator Pelayanan
-                    </option>
+                    <option value="Koordinator Pelayanan">Koordinator Pelayanan</option>
                   </select>
-
-                  
 
                   <label className="form-label">Status Sidi</label>
                   <select
