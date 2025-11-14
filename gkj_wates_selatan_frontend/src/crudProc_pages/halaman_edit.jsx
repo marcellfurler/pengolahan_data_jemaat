@@ -140,7 +140,7 @@ const EditJemaat = () => {
 
       if (res.ok) {
         alert("✅ Data jemaat berhasil diperbarui!");
-        navigate("/data");
+        navigate(-1);
       } else {
         alert("❌ " + (data.message || "Gagal memperbarui data jemaat."));
       }

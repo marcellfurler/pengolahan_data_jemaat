@@ -22,7 +22,7 @@ const HalamanTambahDataBaru = () => {
     tanggalLahir: "",
     jenisKelamin: "",
     agama: "",
-    kontak: "",
+    nomorTelepon: "",
     pepanthan: "",
     statusJemaat: "",
     statusSidi: "",
@@ -96,16 +96,75 @@ const HalamanTambahDataBaru = () => {
         setStep(1);
       }
     }
+
+    
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const existingData = JSON.parse(localStorage.getItem("dataJemaat")) || dataJemaat;
-    const newData = [...existingData, { id: Date.now(), ...formData }];
-    localStorage.setItem("dataJemaat", JSON.stringify(newData));
-    alert("Data jemaat baru berhasil ditambahkan!");
-    navigate("/data");
+
+    try {
+      const form = new FormData();
+
+      // === DATA DASAR JEMAAT ===
+      form.append("namaLengkap", formData.namaLengkap || "");
+      form.append("nik", formData.nik || "");
+      form.append("alamat", formData.alamat || "");
+      form.append("tempatLahir", formData.tempatLahir || "");
+      form.append("tanggalLahir", formData.tanggalLahir || "");
+      form.append("jenisKelamin", formData.jenisKelamin || "");
+      form.append("agama", formData.agama || "");
+      form.append("kontak", formData.nomorTelepon || "");
+      form.append("pepanthan", formData.pepanthan || "");
+      form.append("statusJemaat", formData.statusJemaat || "");
+      form.append("statusNikah", formData.statusNikah || "");
+      form.append("statusSidi", formData.statusSidi || "");
+      form.append("statusBaptis", formData.statusBaptis || "");
+
+      // === FOTO JEMAAT ===
+      if (formData.foto instanceof File) {
+        form.append("foto", formData.foto);
+      } else if (document.querySelector('input[name="foto"]').files[0]) {
+        form.append("foto", document.querySelector('input[name="foto"]').files[0]);
+      }
+
+      // === SERTIFIKAT NIKAH ===
+      if (formData.dataNikah?.sertifikat) {
+        form.append("sertifikatNikah", formData.dataNikah.sertifikat);
+      }
+
+      // === SERTIFIKAT SIDI ===
+      if (formData.dataSidi?.sertifikat) {
+        form.append("sertifikatSidi", formData.dataSidi.sertifikat);
+      }
+
+      // === SERTIFIKAT BAPTIS ===
+      if (formData.dataBaptis?.sertifikat) {
+        form.append("sertifikatBaptis", formData.dataBaptis.sertifikat);
+      }
+
+      // === KIRIM KE BACKEND ===
+      const res = await fetch("http://localhost:5000/dataJemaat", {
+        method: "POST",
+        body: form,
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert(data.message || "Data jemaat berhasil ditambahkan!");
+        navigate("/data");
+      } else {
+        alert(data.message || "Gagal menambahkan data jemaat");
+        console.error(data);
+      }
+    } catch (error) {
+      console.error("Error submit:", error);
+      alert("Terjadi kesalahan saat mengirim data.");
+    }
   };
+
+
 
   const progress = step === 1 ? 33 : step === 2 ? 66 : 100;
 
@@ -242,9 +301,9 @@ const HalamanTambahDataBaru = () => {
                   <label className="form-label">Kontak</label>
                   <input
                     type="text"
-                    name="kontak"
+                    name="nomorTelepon"
                     className="form-control mb-3"
-                    value={formData.kontak}
+                    value={formData.nomorTelepon}
                     onChange={handleChange}
                   />
 
@@ -427,160 +486,82 @@ const HalamanTambahDataBaru = () => {
             </form>
           )}
 
-          {/* STEP 3 (akan dilanjutkan dengan pembagian 2 kolom untuk Nikah, Sidi, dan Baptis) */}
-          {/* STEP 3 – DATA TAMBAHAN (DINAMIS) */}
+          {/* STEP 3 – UPLOAD SERTIFIKAT */}
           {step === 3 && (
             <form onSubmit={handleSubmit}>
               <div className="row">
-                {/* TAMPILKAN HANYA SESUAI STATUS */}
                 {showNikah && (
-                  <>
-                  <h5 className="text-center flex-grow-1 mb-3">Form Informasi Pernikahan</h5>
-                    <br /><br />
-                    <div className="col-md-3 mb-3">
-                      <label className="form-label">Nomor Surat</label>
-                      <input
-                        type="text"
-                        name="dataNikah.nomorSuratNikah"
-                        className="form-control"
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <label className="form-label">Tanggal Pernikahan</label>
-                      <input
-                        type="date"
-                        name="dataNikah.tanggalNikah"
-                        className="form-control"
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <label className="form-label">Nama Pendeta yang melayani</label>
-                      <input
-                        type="text"
-                        name="dataNikah.pendetaNikah"
-                        className="form-control"
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <label className="form-label">Gereja Asal Pernikahan</label>
-                      <input
-                        type="text"
-                        name="dataNikah.gerejaAsalNikah"
-                        className="form-control"
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <label className="form-label">Nama Pasangan</label>
-                      <input
-                        type="text"
-                        name="dataNikah.namaPasangan"
-                        className="form-control"
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <br /><br /><br /><br />
-                  </>
+                  <div className="col-md-4 mb-3">
+                    <h5 className="text-center mb-2">Sertifikat Nikah</h5>
+                    <input
+                      type="file"
+                      name="sertifikatNikah"
+                      accept="image/*,application/pdf"
+                      className="form-control"
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          dataNikah: { sertifikat: e.target.files[0] },
+                        })
+                      }
+                    />
+                    {formData.dataNikah?.sertifikat && (
+                      <p className="mt-1">{formData.dataNikah.sertifikat.name}</p>
+                    )}
+                  </div>
                 )}
 
                 {showSidi && (
-                  <>
-                  <h5 className="text-center flex-grow-1 mb-3">Form Informasi Sidi</h5>
-                    <br /><br />
-                    <div className="col-md-3 mb-3">
-                      <label className="form-label">Nomor Surat</label>
-                      <input
-                        type="text"
-                        name="dataSidi.nomorSuratSidi"
-                        className="form-control"
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <label className="form-label">Tanggal Sidi</label>
-                      <input
-                        type="date"
-                        name="dataSidi.tanggalSidi"
-                        className="form-control"
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <label className="form-label">Gereja Asal Sidi</label>
-                      <input
-                        type="text"
-                        name="dataSidi.gererjaAsalSidi"
-                        className="form-control"
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <label className="form-label">Pendeta yang Melayani Sidi</label>
-                      <input
-                        type="text"
-                        name="dataSidi.pendetaSidi"
-                        className="form-control"
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <br /><br /><br /><br></br>
-                  </>
+                  <div className="col-md-4 mb-3">
+                    <h5 className="text-center mb-2">Sertifikat Sidi</h5>
+                    <input
+                      type="file"
+                      name="sertifikatSidi"
+                      accept="image/*,application/pdf"
+                      className="form-control"
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          dataSidi: { sertifikat: e.target.files[0] },
+                        })
+                      }
+                    />
+                    {formData.dataSidi?.sertifikat && (
+                      <p className="mt-1">{formData.dataSidi.sertifikat.name}</p>
+                    )}
+                  </div>
                 )}
 
                 {showBaptis && (
-                  <>
-                  <h5 className="text-center flex-grow-1 mb-3">Form Informasi Baptis</h5>
-                  <br /><br />
-                  <div className="col-md-3 mb-3">
-                      <label className="form-label">Nomor Surat</label>
-                      <input
-                        type="text"
-                        name="dataSidi.nomorSuratBaptis"
-                        className="form-control"
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <label className="form-label">Tanggal Baptis</label>
-                      <input
-                        type="date"
-                        name="dataBaptis.tanggalBaptis"
-                        className="form-control"
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <label className="form-label">Gereja Asal Baptis</label>
-                      <input
-                        type="text"
-                        name="dataSidi.gererjaAsalBaptis"
-                        className="form-control"
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <label className="form-label">Pendeta yang Membaptis</label>
-                      <input
-                        type="text"
-                        name="dataBaptis.pendetaBaptis"
-                        className="form-control"
-                        onChange={handleChange}
-                      />
-                    </div>
-                  </>
+                  <div className="col-md-4 mb-3">
+                    <h5 className="text-center mb-2">Sertifikat Baptis</h5>
+                    <input
+                      type="file"
+                      name="sertifikatBaptis"
+                      accept="image/*,application/pdf"
+                      className="form-control"
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          dataBaptis: { sertifikat: e.target.files[0] },
+                        })
+                      }
+                    />
+                    {formData.dataBaptis?.sertifikat && (
+                      <p className="mt-1">{formData.dataBaptis.sertifikat.name}</p>
+                    )}
+                  </div>
                 )}
               </div>
 
-              <div className="text-end">
+              <div className="text-end mt-4">
                 <button type="submit" className="btn btn-success">
                   <FontAwesomeIcon icon={faSave} /> Simpan Data
                 </button>
               </div>
             </form>
           )}
+
         </div>
       </div>
     </>
