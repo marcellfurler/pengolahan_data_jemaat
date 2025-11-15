@@ -75,6 +75,13 @@ export const getAllJemaat = (req, res) => {
 // ===================================================
 // UPDATE DATA JEMAAT LENGKAP
 // ===================================================
+// Pastikan folder sertifikat/foto ada
+const ensureFolderExists = (folderPath) => {
+  if (!fs.existsSync(folderPath)) {
+    fs.mkdirSync(folderPath, { recursive: true });
+  }
+};
+
 export const updateJemaat = (req, res) => {
   const { nik } = req.params;
   let {
@@ -243,7 +250,7 @@ export const updateJemaat = (req, res) => {
             }
           }
 
-          // --- UPLOAD SERTIFIKAT BAPTIS, SIDI, NIKAH ---
+          // --- UPLOAD/UPDATE SERTIFIKAT BAPTIS, SIDI, NIKAH ---
           let deleteStatuses = req.body.deleteStatus;
           if (typeof deleteStatuses === "string") {
             try { deleteStatuses = JSON.parse(deleteStatuses); } catch { deleteStatuses = [deleteStatuses]; }
@@ -256,21 +263,44 @@ export const updateJemaat = (req, res) => {
             nikah: { table: "dataNikah", status: "statusNikah", sertifikat: "sertifikatNikah", defaultValue: "Belum Nikah", value: "Nikah" },
           };
 
+          // mapping field upload
+          const fileMap = {
+            baptis: req.files?.sertifikatBaptis?.[0],
+            sidi: req.files?.sertifikatSidi?.[0],
+            nikah: req.files?.sertifikatNikah?.[0],
+          };
+
           for (const t of sertifikatTypes) {
             const { table, status, sertifikat, defaultValue, value } = columnMap[t];
 
-            let filePath = req.files?.[t]?.[0]
-              ? path.relative(process.cwd(), req.files[t][0].path).replace(/\\/g, "/")
-              : null;
-
+            const filePath = fileMap[t] ? path.relative(process.cwd(), fileMap[t].path).replace(/\\/g, "/") : null;
             const toDelete = deleteStatuses.includes(t);
 
-            await promisePool.query(
-              `INSERT INTO ${table} (NIK, ${status}, ${sertifikat})
-               VALUES (?, ?, ?)
-               ON DUPLICATE KEY UPDATE ${status}=VALUES(${status}), ${sertifikat}=VALUES(${sertifikat})`,
-              [nik, toDelete ? defaultValue : value, toDelete ? null : filePath]
-            );
+            // Ambil data lama
+            const [existing] = await promisePool.query(`SELECT ${status}, ${sertifikat} FROM ${table} WHERE NIK=?`, [nik]);
+            let currentStatus = existing.length ? existing[0][status] : defaultValue;
+            let currentSertifikat = existing.length ? existing[0][sertifikat] : null;
+
+            let newStatus = currentStatus;
+            let newSertifikat = currentSertifikat;
+
+            if (toDelete) {
+              newStatus = defaultValue;
+              newSertifikat = null;
+            } else if (filePath) {
+              newStatus = value; // update status hanya jika ada file
+              newSertifikat = filePath;
+            }
+
+            // INSERT/UPDATE hanya jika ada perubahan
+            if (filePath || toDelete) {
+              await promisePool.query(
+                `INSERT INTO ${table} (NIK, ${status}, ${sertifikat})
+                 VALUES (?, ?, ?)
+                 ON DUPLICATE KEY UPDATE ${status}=VALUES(${status}), ${sertifikat}=VALUES(${sertifikat})`,
+                [nik, newStatus, newSertifikat]
+              );
+            }
           }
 
           res.json({ message: "✅ Data jemaat berhasil diperbarui lengkap!" });
@@ -282,14 +312,6 @@ export const updateJemaat = (req, res) => {
     );
   });
 };
-
-// Pastikan folder sertifikat ada
-const ensureFolderExists = (folderPath) => {
-  if (!fs.existsSync(folderPath)) {
-    fs.mkdirSync(folderPath, { recursive: true });
-  }
-};
-
 
 
 // Tambah Jemaat
@@ -483,4 +505,3 @@ export const tambahJemaat = (req, res) => {
     return res.status(500).json({ message: "Terjadi kesalahan server", error });
   }
 };
-

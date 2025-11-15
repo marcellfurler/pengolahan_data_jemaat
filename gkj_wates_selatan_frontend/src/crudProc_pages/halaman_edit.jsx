@@ -121,10 +121,11 @@ const EditJemaat = () => {
     // Sertifikat baru untuk status
     Object.keys(statusFileMap).forEach((status) => {
       if (statusFileMap[status]) {
-        formDataToSend.append("sertifikat", statusFileMap[status]);
-        formDataToSend.append("statusType", status);
+        const fieldName = `sertifikat${status.charAt(0).toUpperCase() + status.slice(1)}`; // contoh: 'baptis' → 'sertifikatBaptis'
+        formDataToSend.append(fieldName, statusFileMap[status]);
       }
     });
+
 
     // Delete status
     if (deleteStatus.length > 0) {
@@ -186,8 +187,16 @@ const EditJemaat = () => {
                   <option value="Perempuan">Perempuan</option>
                 </select>
 
-                <label className="form-label fw-bold mt-3">Agama</label>
-                <input type="text" name="agama" value={formData.agama} onChange={handleChange} className="form-control" />
+                <label className="form-label">Agama</label>
+                  <select name="agama" value={formData.agama} onChange={handleChange} className="form-select mb-3">
+                    <option value="">Pilih...</option>
+                    <option value="Kristen">Kristen</option>
+                    <option value="Katolik">Katolik</option>
+                    <option value="Hindu">Hindu</option>
+                    <option value="Budha">Budha</option>
+                    <option value="Islam">Islam</option>
+                    <option value="Konghucu">Konghucu</option>
+                  </select>
 
                 <label className="form-label fw-bold mt-3">Nama Pekerjaan</label>
                 <input type="text" name="namaPekerjaan" value={formData.namaPekerjaan || ""} onChange={handleChange} className="form-control" />

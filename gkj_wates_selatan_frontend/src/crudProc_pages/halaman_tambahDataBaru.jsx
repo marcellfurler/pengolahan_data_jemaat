@@ -29,6 +29,7 @@ const HalamanTambahDataBaru = () => {
     statusSidi: "",
     statusBaptis: "",
     statusNikah: "",
+    statusJemaat:"",
     dataPelayanan: {},
     dataNikah: {},
     dataSidi: {},
@@ -65,9 +66,7 @@ const HalamanTambahDataBaru = () => {
   const handleNext = (e) => {
     e.preventDefault();
     if (
-      formData.statusJemaat === "Pendeta" ||
-      formData.statusJemaat === "Majelis" ||
-      formData.statusJemaat === "Koordinator Pelayanan"
+      formData.statusJemaat === "Pendeta"
     ) {
       setStep(2);
     } else {
@@ -110,45 +109,47 @@ const HalamanTambahDataBaru = () => {
       form.append("tanggalLahir", formData.tanggalLahir || "");
       form.append("jenisKelamin", formData.jenisKelamin || "");
       form.append("agama", formData.agama || "");
-      form.append("golonganDarah", formData.golonganDarah || "")
+      form.append("golonganDarah", formData.golonganDarah || "");
       form.append("nomorTelepon", formData.nomorTelepon || "");
       form.append("pepanthan", formData.pepanthan || "");
-      form.append("namaPelayanan", formData.namaPelayanan || "");
       form.append("statusNikah", formData.statusNikah || "");
       form.append("statusSidi", formData.statusSidi || "");
       form.append("statusBaptis", formData.statusBaptis || "");
+      form.append("statusJemaat", formData.statusJemaat || "");
       form.append("namaPekerjaan", formData.namaPekerjaan || "");
-      form.append("jabatan", formData.jabatan || "")
-      
+      form.append("jabatan", formData.jabatan || "");
+      form.append("namaPelayanan", formData.namaPelayanan || ""); // Hanya string
 
       // === FOTO JEMAAT ===
       if (formData.foto instanceof File) {
         form.append("foto", formData.foto);
       }
 
-      // === SERTIFIKAT NIKAH ===
-      if (formData.dataNikah?.sertifikat) {
+      // === SERTIFIKAT ===
+      if (formData.dataNikah?.sertifikat instanceof File) {
         form.append("sertifikatNikah", formData.dataNikah.sertifikat);
       }
-
-      // === SERTIFIKAT SIDI ===
-      if (formData.dataSidi?.sertifikat) {
+      if (formData.dataSidi?.sertifikat instanceof File) {
         form.append("sertifikatSidi", formData.dataSidi.sertifikat);
       }
-
-      // === SERTIFIKAT BAPTIS ===
-      if (formData.dataBaptis?.sertifikat) {
+      if (formData.dataBaptis?.sertifikat instanceof File) {
         form.append("sertifikatBaptis", formData.dataBaptis.sertifikat);
       }
+      if (formData.dataPendeta?.sertifikat instanceof File) {
+        form.append("sertifikatKependetaan", formData.dataPendeta.sertifikat);
+      }
+
+      // === PENDIDIKAN DINAMIS ===
       if (formData.pendidikan && formData.pendidikan.length > 0) {
         form.append("pendidikan", JSON.stringify(formData.pendidikan));
       }
-      if (formData.namaPelayanan) {
-        form.append("namaPelayanan", JSON.stringify(formData.namaPelayanan));
+
+      // === RIWAYAT PELAYANAN DINAMIS ===
+      if (formData.dataPelayananList && formData.dataPelayananList.length > 0) {
+        form.append("dataPelayananList", JSON.stringify(formData.dataPelayananList));
       }
 
-
-      // === KIRIM KE BACKEND ===
+      // Kirim ke backend
       const res = await fetch("http://localhost:5000/api/jemaat", {
         method: "POST",
         body: form,
@@ -168,6 +169,7 @@ const HalamanTambahDataBaru = () => {
       alert("Terjadi kesalahan saat mengirim data.");
     }
   };
+
 
   // === PENDIDIKAN DINAMIS ===
   const [pendidikanList, setPendidikanList] = useState([
@@ -200,6 +202,39 @@ const HalamanTambahDataBaru = () => {
     setPendidikanList(newList);
     setFormData({ ...formData, pendidikan: newList });
   };
+
+  // Riwayat Pelayanan Dinamis
+  const [pelayananList, setPelayananList] = useState([
+    { namaGereja: "", tahunMulai: "", tahunSelesai: "" },
+  ]);
+
+  const handlePelayananChange = (index, field, value) => {
+    const updated = [...pelayananList];
+    updated[index][field] = value;
+    setPelayananList(updated);
+
+    // simpan juga ke formData supaya terkirim
+    setFormData({
+      ...formData,
+      dataPelayananList: updated,
+    });
+  };
+
+  const addPelayanan = () => {
+    const newList = [
+      ...pelayananList,
+      { namaGereja: "", tahunMulai: "", tahunSelesai: "" },
+    ];
+    setPelayananList(newList);
+    setFormData({ ...formData, dataPelayananList: newList });
+  };
+
+  const removePelayanan = (index) => {
+    const newList = pelayananList.filter((_, i) => i !== index);
+    setPelayananList(newList);
+    setFormData({ ...formData, dataPelayananList: newList });
+  };
+
 
 
 
@@ -531,9 +566,9 @@ const HalamanTambahDataBaru = () => {
                 <div className="col-md-6">
                   <label className="form-label">Status Jemaat</label>
                   <select
-                    name="namaPelayanan"   // ini ganti
+                    name="statusJemaat"   // ini ganti
                     className="form-select mb-3"
-                    value={formData.namaPelayanan}
+                    value={formData.statusJemaat}
                     onChange={handleChange}
                   >
                     <option value="">-- Pilih --</option>
@@ -568,41 +603,38 @@ const HalamanTambahDataBaru = () => {
           )}
 
           {/* STEP 2 */}
-          {step === 2 && (
+          {step === 2 && formData.statusJemaat === "Pendeta" && (
             <form onSubmit={handleNextAfterPelayanan}>
-              <h4 className="mb-3 text-center">Form Data Pelayanan</h4>
-              <div className="row">
-                <div className="col-md-6">
-                  <label className="form-label">Tahun Pentahbisan</label>
-                  <input
-                    type="text"
-                    name="dataPelayanan.tahunPentahbisan"
-                    className="form-control mb-3"
-                    onChange={handleChange}
-                  />
+              <h4 className="mb-3 text-center">Form Data Pelayanan GKJ Wates Selatan</h4>
 
-                  <label className="form-label">Riwayat Pendidikan</label>
+              <div className="row">
+                {/* Upload Sertifikat Pendeta */}
+                <div className="col-md-4 mb-3">
+                  <label className="form-label">Sertifikat Pendeta</label>
                   <input
-                    type="text"
-                    name="dataPelayanan.riwayatPendidikan"
-                    className="form-control mb-3"
-                    onChange={handleChange}
+                    type="file"
+                    name="sertifikatKependetaan"
+                    accept="image/*,application/pdf"
+                    className="form-control"
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        dataPendeta: { sertifikat: e.target.files[0] },
+                      })
+                    }
                   />
+                  {formData.dataPendeta?.sertifikat && (
+                    <p className="mt-1">{formData.dataPendeta.sertifikat.name}</p>
+                  )}
                 </div>
 
-                <div className="col-md-6">
-                  <label className="form-label">Riwayat Pelayanan</label>
-                  <textarea
-                    name="dataPelayanan.riwayatPelayanan"
-                    className="form-control mb-3"
-                    rows="3"
-                    onChange={handleChange}
-                  ></textarea>
-
+                {/* Pilih Jabatan */}
+                <div className="col-md-4 mb-3">
                   <label className="form-label">Jabatan</label>
                   <select
                     name="dataPelayanan.jabatan"
                     className="form-select mb-3"
+                    value={formData.dataPelayanan?.jabatan || ""}
                     onChange={handleChange}
                   >
                     <option value="">-- Pilih Jabatan --</option>
@@ -614,13 +646,89 @@ const HalamanTambahDataBaru = () => {
                 </div>
               </div>
 
-              <div className="text-end">
+              {/* Riwayat Pelayanan Dinamis */}
+              <div className="col-12 mt-4">
+                <h4 className="mb-3 text-center">Riwayat Pelayanan</h4>
+
+                {pelayananList.map((pel, index) => (
+                  <div className="row g-2 mb-3 align-items-end" key={index}>
+                    {/* Nama Gereja */}
+                    <div className="col-md-5">
+                      <label className="form-label">Nama Gereja</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Nama Gereja"
+                        value={pel.namaGereja}
+                        onChange={(e) =>
+                          handlePelayananChange(index, "namaGereja", e.target.value)
+                        }
+                      />
+                    </div>
+
+                    {/* Tahun Mulai */}
+                    <div className="col-md-2">
+                      <label className="form-label">Tahun Mulai</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        placeholder="2000"
+                        min="1900"
+                        max={new Date().getFullYear()}
+                        value={pel.tahunMulai}
+                        onChange={(e) =>
+                          handlePelayananChange(index, "tahunMulai", e.target.value)
+                        }
+                      />
+                    </div>
+
+                    {/* Tahun Selesai */}
+                    <div className="col-md-2">
+                      <label className="form-label">Tahun Selesai</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        placeholder="2023"
+                        min="1900"
+                        max={new Date().getFullYear()}
+                        value={pel.tahunSelesai}
+                        onChange={(e) =>
+                          handlePelayananChange(index, "tahunSelesai", e.target.value)
+                        }
+                      />
+                    </div>
+
+                    {/* Hapus */}
+                    <div className="col-md-1">
+                      <button
+                        type="button"
+                        className="btn btn-danger"
+                        onClick={() => removePelayanan(index)}
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  className="btn btn-sm btn-primary mt-2"
+                  onClick={addPelayanan}
+                >
+                  + Tambah Riwayat Pelayanan
+                </button>
+              </div>
+
+              <div className="text-end mt-4">
                 <button type="submit" className="btn btn-primary">
                   Next <FontAwesomeIcon icon={faArrowRight} />
                 </button>
               </div>
             </form>
           )}
+
+
 
           {/* STEP 3 – UPLOAD SERTIFIKAT */}
           {step === 3 && (

@@ -69,9 +69,11 @@ router.post(
 router.put(
   "/:nik",
   upload.fields([
-    { name: "foto", maxCount: 1 },
-    { name: "sertifikat", maxCount: 1 }, // untuk update status tertentu
-  ]),
+  { name: "foto", maxCount: 1 },
+  { name: "sertifikatNikah", maxCount: 1 },
+  { name: "sertifikatSidi", maxCount: 1 },
+  { name: "sertifikatBaptis", maxCount: 1 },
+]),
   dataJemaatController.updateJemaat
 );
 
