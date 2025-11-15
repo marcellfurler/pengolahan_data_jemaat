@@ -2,13 +2,14 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
-import bodyParser from "body-parser"; // ⬅️ untuk form upload
+import bodyParser from "body-parser"; 
 
 // Import semua routes
 import dataJemaatRoutes from "./routes/dataJemaatRoutes.js";
 import dataNikahRoutes from "./routes/dataNikahRoutes.js";
 import dataSidiRoutes from "./routes/dataSidiRoutes.js";
 import dataBaptisRoutes from "./routes/dataBaptisRoutes.js";
+import dataPendetaRoutes from "./routes/dataPendetaRoutes.js"; // ✅ IMPOR ROUTE PENDETA
 
 const app = express();
 
@@ -37,12 +38,13 @@ app.use("/api/jemaat", dataJemaatRoutes);
 app.use("/api/nikah", dataNikahRoutes);
 app.use("/api/sidi", dataSidiRoutes);
 app.use("/api/baptis", dataBaptisRoutes);
+app.use("/api/pendeta", dataPendetaRoutes); // ✅ GUNAKAN ROUTE PENDETA
 
 // ================================
 // ✅ Route default (untuk test)
 // ================================
 app.get("/", (req, res) => {
-  res.send("✅ Server GKJ Backend aktif dan berjalan 🚀");
+  res.send("✅ Server GKJ Backend aktif dan berjalan 🚀");
 });
 
 // ================================
@@ -50,5 +52,5 @@ app.get("/", (req, res) => {
 // ================================
 const PORT = 5000;
 app.listen(PORT, () => {
-  console.log(`✅ Server berjalan di: http://localhost:${PORT}`);
+  console.log(`✅ Server berjalan di: http://localhost:${PORT}`);
 });

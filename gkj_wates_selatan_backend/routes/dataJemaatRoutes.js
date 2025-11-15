@@ -32,6 +32,9 @@ const storage = multer.diskStorage({
     else if (file.fieldname === "sertifikatBaptis") {
       folder = path.join(__dirname, "../uploads/sertifikat/baptis");
     } 
+    else if (file.fieldname === "sertifikatPendeta") {
+      folder = path.join(__dirname, "../uploads/sertifikat/pendeta");
+    }
     else if (file.fieldname === "sertifikat") {
       folder = path.join(__dirname, "../uploads/sertifikat/update");
     }
@@ -52,8 +55,10 @@ const upload = multer({ storage });
 // ROUTES
 // =========================
 
+// GET semua jemaat
 router.get("/", dataJemaatController.getAllJemaat);
 
+// POST tambah jemaat biasa
 router.post(
   "/",
   upload.fields([
@@ -61,20 +66,37 @@ router.post(
     { name: "sertifikatNikah", maxCount: 1 },
     { name: "sertifikatSidi", maxCount: 1 },
     { name: "sertifikatBaptis", maxCount: 1 },
+    { name: "sertifikatPendeta", maxCount: 1 }, // tetap ada, tapi tidak digunakan di tambahJemaat
   ]),
-  dataJemaatController.tambahJemaat // <-- ganti createJemaat jadi tambahJemaat
+  dataJemaatController.tambahJemaat
 );
 
-
+// PUT update jemaat
 router.put(
   "/:nik",
   upload.fields([
-  { name: "foto", maxCount: 1 },
-  { name: "sertifikatNikah", maxCount: 1 },
-  { name: "sertifikatSidi", maxCount: 1 },
-  { name: "sertifikatBaptis", maxCount: 1 },
-]),
+    { name: "foto", maxCount: 1 },
+    { name: "sertifikatNikah", maxCount: 1 },
+    { name: "sertifikatSidi", maxCount: 1 },
+    { name: "sertifikatBaptis", maxCount: 1 },
+    { name: "sertifikatPendeta", maxCount: 1 },
+  ]),
   dataJemaatController.updateJemaat
 );
+
+// =========================
+// TAMBAHAN: ROUTE UNTUK PENDETA
+// =========================
+router.post(
+  "/pendeta",
+  upload.fields([
+    { name: "foto", maxCount: 1 },
+    { name: "sertifikatPendeta", maxCount: 1 },
+  ]),
+  dataJemaatController.tambahPendeta
+);
+
+// Hapus jemaat
+router.delete("/hapus/:nik", dataJemaatController.hapusJemaat);
 
 export default router;

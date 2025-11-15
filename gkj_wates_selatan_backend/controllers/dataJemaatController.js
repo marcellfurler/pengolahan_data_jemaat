@@ -2,10 +2,12 @@
 import { db } from "../config/db.js";
 import path from "path";
 import fs from "fs";
+import { unlink } from "fs/promises"; 
 
 // ===================================================
 // AMBIL SEMUA DATA JEMAAT + RELASI
 // ===================================================
+// controllers/dataJemaatController.js
 export const getAllJemaat = (req, res) => {
   const query = `
     SELECT 
@@ -21,10 +23,10 @@ export const getAllJemaat = (req, res) => {
       j.alamat,
       j.foto,
       b.statusBaptis,
-      s.statusSidi,
-      n.statusNikah,
       b.sertifikatBaptis,
+      s.statusSidi,
       s.sertifikatSidi,
+      n.statusNikah,
       n.sertifikatNikah,
       p.namaPepanthan,        
       l.namaPelayanan,
@@ -33,7 +35,12 @@ export const getAllJemaat = (req, res) => {
       pd.kodeRiwayatPendidikan,
       pd.jenjangPendidikan,
       pd.namaInstitusi,
-      pd.tahunLulus
+      pd.tahunLulus,
+      dp.jabatan AS jabatanPendeta,
+      dp.sertifikatPendeta,
+      drp.namaGereja,
+      drp.tahunMulai,
+      drp.tahunSelesai
     FROM dataJemaat j
     LEFT JOIN dataBaptis b ON j.NIK = b.NIK
     LEFT JOIN dataSidi s ON j.NIK = s.NIK
@@ -42,17 +49,28 @@ export const getAllJemaat = (req, res) => {
     LEFT JOIN dataPelayanan l ON j.NIK = l.NIK
     LEFT JOIN dataPekerjaan pe ON j.NIK = pe.NIK
     LEFT JOIN dataRiwayatPendidikan pd ON j.NIK = pd.NIK
+    LEFT JOIN dataPendeta dp ON j.NIK = dp.NIK
+    LEFT JOIN dataRiwayatPendeta drp ON dp.kodePendeta = drp.kodePendeta
   `;
 
   db.query(query, (err, results) => {
-    if (err) return res.status(500).json({ message: "Gagal mengambil data jemaat" });
+    if (err) {
+      console.error("❌ Error getAllJemaat:", err);
+      return res.status(500).json({ message: "Gagal mengambil data jemaat", err });
+    }
 
+    // Mapping jemaat + pendidikanList
     const jemaatMap = {};
     results.forEach((row) => {
       if (!jemaatMap[row.NIK]) {
-        jemaatMap[row.NIK] = { ...row, pendidikanList: [] };
+        jemaatMap[row.NIK] = {
+          ...row,
+          pendidikanList: [],
+          riwayatPendetaList: [],
+        };
       }
 
+      // Pendidikan
       if (row.jenjangPendidikan) {
         jemaatMap[row.NIK].pendidikanList.push({
           kodeRiwayatPendidikan: row.kodeRiwayatPendidikan,
@@ -62,10 +80,23 @@ export const getAllJemaat = (req, res) => {
         });
       }
 
+      // Riwayat Pendeta
+      if (row.namaGereja) {
+        jemaatMap[row.NIK].riwayatPendetaList.push({
+          namaGereja: row.namaGereja,
+          tahunMulai: row.tahunMulai,
+          tahunSelesai: row.tahunSelesai,
+        });
+      }
+
+      // Hapus field sementara
       delete jemaatMap[row.NIK].jenjangPendidikan;
       delete jemaatMap[row.NIK].namaInstitusi;
       delete jemaatMap[row.NIK].tahunLulus;
       delete jemaatMap[row.NIK].kodeRiwayatPendidikan;
+      delete jemaatMap[row.NIK].namaGereja;
+      delete jemaatMap[row.NIK].tahunMulai;
+      delete jemaatMap[row.NIK].tahunSelesai;
     });
 
     res.json(Object.values(jemaatMap));
@@ -313,6 +344,92 @@ export const updateJemaat = (req, res) => {
   });
 };
 
+// ===================================================
+// DELETE DATA JEMAAT (Diperbaiki)
+// ===================================================
+export const hapusJemaat = async (req, res) => {
+    const { nik } = req.params;
+
+    if (!nik) return res.status(400).json({ message: "NIK tidak diberikan" });
+
+    const promisePool = db.promise();
+    
+    // Daftar tabel anak yang menggunakan NIK sebagai foreign key
+    const tablesUsingNIK = [
+        "dataBaptis", "dataSidi", "dataNikah", "dataPepanthan",
+        "dataPelayanan", "dataPekerjaan", "dataRiwayatPendidikan", 
+        "dataPendeta"
+    ];
+    
+    try {
+        // 1. Ambil path foto Jemaat dan sertifikat lain sebelum dihapus
+        const [jemaatRows] = await promisePool.query(`
+            SELECT 
+                j.foto, b.sertifikatBaptis, s.sertifikatSidi, n.sertifikatNikah, dp.sertifikatPendeta
+            FROM dataJemaat j
+            LEFT JOIN dataBaptis b ON j.NIK = b.NIK
+            LEFT JOIN dataSidi s ON j.NIK = s.NIK
+            LEFT JOIN dataNikah n ON j.NIK = n.NIK
+            LEFT JOIN dataPendeta dp ON j.NIK = dp.NIK
+            WHERE j.NIK=?
+        `, [nik]);
+
+        if (jemaatRows.length === 0) {
+            return res.status(404).json({ message: "Data jemaat tidak ditemukan." });
+        }
+        
+        const pathsToDelete = [];
+        const row = jemaatRows[0];
+        
+        // Kumpulkan semua path file yang perlu dihapus
+        if (row.foto) pathsToDelete.push(row.foto);
+        if (row.sertifikatBaptis) pathsToDelete.push(row.sertifikatBaptis);
+        if (row.sertifikatSidi) pathsToDelete.push(row.sertifikatSidi);
+        if (row.sertifikatNikah) pathsToDelete.push(row.sertifikatNikah);
+        if (row.sertifikatPendeta) pathsToDelete.push(row.sertifikatPendeta);
+
+
+        // 2. Hapus data dari tabel anak yang menggunakan NIK
+        for (const table of tablesUsingNIK) {
+            await promisePool.query(`DELETE FROM ${table} WHERE NIK=?`, [nik]);
+        }
+        
+        // 3. Hapus data dari dataRiwayatPendeta (menggunakan kodePendeta yang diasumsikan sama dengan NIK)
+        // 💡 PERBAIKAN: Ini harusnya dataRiwayatPendeta (cek skema kolom)
+        await promisePool.query(`DELETE FROM dataRiwayatPendeta WHERE kodePendeta=?`, [nik]); 
+
+        // 4. Hapus data Jemaat utama (TERAKHIR)
+        await promisePool.query(`DELETE FROM dataJemaat WHERE NIK=?`, [nik]);
+
+        // 5. Hapus file fisik
+        const deleteFilePromises = pathsToDelete.map(async (filePath) => {
+            try {
+                const absolutePath = path.join(process.cwd(), filePath);
+                // Hanya hapus jika file ada (gunakan fs.promises.unlink)
+                if (fs.existsSync(absolutePath)) {
+                    await unlink(absolutePath);
+                }
+            } catch (fileErr) {
+                // Log error file tapi jangan crash transaksi utama
+                console.warn(`⚠️ Gagal menghapus file ${filePath}:`, fileErr.message);
+            }
+        });
+        await Promise.all(deleteFilePromises);
+
+
+        res.json({ message: "✅ Jemaat berhasil dihapus!" });
+
+    } catch (err) {
+        // Jika terjadi error SQL, kemungkinan besar adalah Foreign Key atau nama kolom salah.
+        console.error("❌ Error hapus jemaat (SQL/Logical):", err);
+        res.status(500).json({ 
+            message: "Gagal menghapus jemaat. Kemungkinan ada masalah relasi Foreign Key atau kesalahan nama kolom/tabel.", 
+            err 
+        });
+    }
+};
+
+
 
 // Tambah Jemaat
 export const tambahJemaat = (req, res) => {
@@ -503,5 +620,158 @@ export const tambahJemaat = (req, res) => {
   } catch (error) {
     console.error("Unexpected error:", error);
     return res.status(500).json({ message: "Terjadi kesalahan server", error });
+  }
+};
+
+export const tambahPendeta = (req, res) => {
+  try {
+    const {
+      namaLengkap,
+      nik,
+      alamat,
+      tempatLahir,
+      tanggalLahir,
+      jenisKelamin,
+      agama,
+      golonganDarah,
+      nomorTelepon,
+      pepanthan,        
+      namaPelayanan,    
+      namaPekerjaan,    
+      jabatan: jabatanPekerjaan, 
+      jabatanPendeta, 
+    } = req.body;
+    
+    const finalJabatanPendeta = jabatanPendeta || req.body.jabatan; 
+
+    const foto = req.files?.foto?.[0] ? `uploads/fotoProfil/${req.files.foto[0].filename}` : null;
+    const sertifikatPendeta = req.files?.sertifikatPendeta?.[0]
+      ? `uploads/sertifikat/pendeta/${req.files.sertifikatPendeta[0].filename}`
+      : null;
+
+    const pendidikanList = req.body.pendidikan ? JSON.parse(req.body.pendidikan) : [];
+    const pelayananList = req.body.dataPelayananList
+      ? JSON.parse(req.body.dataPelayananList)
+      : [];
+
+    // 🔍 Debug: Log semua data yang diterima
+    console.log("📥 Data diterima:");
+    console.log("- NIK:", nik);
+    console.log("- Jabatan Pendeta:", finalJabatanPendeta);
+    console.log("- Sertifikat Pendeta:", sertifikatPendeta);
+    console.log("- Pelayanan List:", pelayananList);
+
+    // 1️⃣ Insert data jemaat dasar (Wajib)
+    const queryJemaat = `
+      INSERT INTO dataJemaat
+      (NIK, namaLengkap, tempatLahir, tanggalLahir, jenisKelamin, agama, golonganDarah, nomorTelepon, alamat, foto)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    db.query(
+        queryJemaat, 
+        [nik, namaLengkap, tempatLahir, tanggalLahir, jenisKelamin, agama, golonganDarah, nomorTelepon, alamat, foto], 
+        async (err) => {
+            if (err) {
+                console.error("❌ Error INSERT dataJemaat (Pendeta):", err);
+                return res.status(500).json({ message: "Gagal menambah data jemaat (NIK mungkin duplikat)", err });
+            }
+
+            console.log("✅ dataJemaat berhasil diinsert dengan NIK:", nik);
+
+            const promisePool = db.promise();
+            const criticalInserts = [];
+
+            // === INSERT DATA PENDUKUNG (Menggunakan Promise.all) ===
+            
+            // Pepanthan
+            if (pepanthan) {
+                criticalInserts.push(
+                    promisePool.query(`INSERT INTO dataPepanthan (NIK, namaPepanthan) VALUES (?, ?)`, [nik, pepanthan])
+                );
+            }
+            
+            // dataPelayanan
+            if (namaPelayanan) {
+                criticalInserts.push(
+                    promisePool.query(`INSERT INTO dataPelayanan (NIK, namaPelayanan) VALUES (?, ?)`, [nik, namaPelayanan])
+                );
+            }
+
+            // Pekerjaan
+            if (namaPekerjaan || jabatanPekerjaan) {
+                criticalInserts.push(
+                    promisePool.query(`INSERT INTO dataPekerjaan (NIK, namaPekerjaan, jabatan) VALUES (?, ?, ?)`, 
+                        [nik, namaPekerjaan || null, jabatanPekerjaan || null])
+                );
+            }
+
+            // Pendidikan List
+            pendidikanList.forEach((p) => {
+                criticalInserts.push(
+                    promisePool.query(
+                        `INSERT INTO dataRiwayatPendidikan (NIK, jenjangPendidikan, namaInstitusi, tahunLulus) VALUES (?, ?, ?, ?)`,
+                        [nik, p.jenjangPendidikan, p.namaInstitusi, p.tahunLulus]
+                    )
+                );
+            });
+
+            // 2️⃣ Detail Pendeta (dataPendeta) 
+            // ✅ PERBAIKAN: kodePendeta AUTO_INCREMENT, nik sebagai FK
+            console.log("🔄 Mencoba insert dataPendeta...");
+            
+            const [pendetaResult] = await promisePool.query(
+                `INSERT INTO dataPendeta (nik, jabatan, sertifikatPendeta) VALUES (?, ?, ?)`, 
+                [nik, finalJabatanPendeta || null, sertifikatPendeta || null]
+            );
+            
+            // Ambil kodePendeta yang baru saja di-generate (AUTO_INCREMENT)
+            const kodePendeta = pendetaResult.insertId;
+            console.log("✅ dataPendeta berhasil diinsert dengan kodePendeta:", kodePendeta);
+
+            // 3️⃣ Riwayat Pelayanan Pendeta (dataRiwayatPendeta) 
+            // ✅ PERBAIKAN: Gunakan kodePendeta dari hasil insert sebelumnya
+            if (pelayananList.length > 0) {
+                console.log(`🔄 Mencoba insert ${pelayananList.length} riwayat pelayanan dengan kodePendeta: ${kodePendeta}...`);
+                
+                pelayananList.forEach((pel) => {
+                    criticalInserts.push(
+                        promisePool.query(
+                            `INSERT INTO dataRiwayatPendeta (kodePendeta, namaGereja, tahunMulai, tahunSelesai) VALUES (?, ?, ?, ?)`,
+                            [kodePendeta, pel.namaGereja || "", pel.tahunMulai || null, pel.tahunSelesai || null]
+                        )
+                    );
+                });
+            }
+            
+            try {
+                // Tunggu semua operasi selesai
+                const results = await Promise.all(criticalInserts);
+                
+                console.log("✅ Semua data berhasil diinsert:", results.length + 1, "operasi"); // +1 untuk dataPendeta
+                
+                res.json({ 
+                    message: "✅ Pendeta berhasil ditambahkan!",
+                    kodePendeta: kodePendeta,
+                    nik: nik
+                });
+                
+            } catch (subErr) {
+                // 🔥 Tangkap error SQL dan laporkan detailnya
+                console.error("❌ Error saat menjalankan INSERT Pendeta sekunder:", subErr);
+                console.error("SQL Error Code:", subErr.code);
+                console.error("SQL Message:", subErr.sqlMessage);
+                
+                res.status(500).json({ 
+                    message: "Gagal menyimpan data Pendeta. Detail error ada di log server.", 
+                    errorDetail: subErr.message,
+                    sqlError: subErr.sqlMessage 
+                });
+            }
+        }
+    );
+  } catch (error) {
+    console.error("❌ Error tambahPendeta (Catch Luar):", error);
+    res.status(500).json({ message: "❌ Terjadi kesalahan saat menambah pendeta" });
   }
 };

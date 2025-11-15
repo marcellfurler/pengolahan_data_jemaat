@@ -26,6 +26,23 @@ const TabelDataJemaat = () => {
   if (loading) {
     return <p className="text-center mt-5">⏳ Memuat data jemaat...</p>;
   }
+  const ComponentNavigasi = ({ NIK_yang_dikirim }) => {
+    const navigate = useNavigate();
+
+    const handleDetailClick = () => {
+        const nik = NIK_yang_dikirim; // Misalkan ini NIK = 213
+
+        // ✅ CARA BENAR: Navigasi dengan Query Parameter
+        navigate(`/detailPendeta?nik=${nik}`); 
+        
+        // Console log yang Anda lihat:
+        console.log("Pengiriman NIK:", nik);
+    };
+
+    return (
+        <button onClick={handleDetailClick}>Lihat Detail</button>
+    );
+};
 
   return (
     <div className="container-fluid mt-5 mb-5 px-4">
@@ -112,7 +129,23 @@ const TabelDataJemaat = () => {
                     </td>
 
 
-                    <td>{data.namaPelayanan || '-'}</td>
+                    <td>
+                      {data.namaPelayanan === 'Pendeta' ? (
+                        <Link
+                          // ✅ PERBAIKAN: Gunakan template literal untuk menambahkan ?nik=
+                          to={`/detailPendeta?nik=${data.NIK}`} 
+                          // Hapus attribute 'state' karena kita menggunakan Query Parameter
+                          // state={{ nik: data.NIK, namaLengkap: data.namaLengkap }} 
+                          className="text-primary" 
+                          onClick={() => console.log("🔗 Mengirim NIK (Query Param):", data.NIK)}
+                        >
+                          {data.namaPelayanan} 
+                        </Link>
+                      ) : (
+                        // ...
+                        <span>{data.namaPelayanan || 'Jemaat'}</span>
+                      )}
+                    </td>
 
                     <td>
                       <Link

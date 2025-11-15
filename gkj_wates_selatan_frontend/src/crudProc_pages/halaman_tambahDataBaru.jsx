@@ -23,14 +23,12 @@ const HalamanTambahDataBaru = () => {
     jenisKelamin: "",
     agama: "",
     nomorTelepon: "",
-    alamat: "",
     pepanthan: "",
     namaPelayanan: "",
     statusSidi: "",
     statusBaptis: "",
     statusNikah: "",
-    statusJemaat:"",
-    dataPelayanan: {},
+    dataPendeta: {},
     dataNikah: {},
     dataSidi: {},
     dataBaptis: {},
@@ -66,7 +64,7 @@ const HalamanTambahDataBaru = () => {
   const handleNext = (e) => {
     e.preventDefault();
     if (
-      formData.statusJemaat === "Pendeta"
+      formData.namaPelayanan === "Pendeta"
     ) {
       setStep(2);
     } else {
@@ -84,7 +82,7 @@ const HalamanTambahDataBaru = () => {
     if (step === 2) setStep(1);
     else if (step === 3) {
       if (
-        formData.statusJemaat === "Pendeta"
+        formData.namaPelayanan === "Pendeta"
       ) {
         setStep(2);
       } else {
@@ -95,80 +93,93 @@ const HalamanTambahDataBaru = () => {
     
   };
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // 1. Tentukan endpoint
+    const isPendeta = formData.namaPelayanan === "Pendeta";
+    const apiEndpoint = isPendeta ? 
+        "http://localhost:5000/api/jemaat/pendeta" : 
+        "http://localhost:5000/api/jemaat"; 
+
     try {
-      const form = new FormData();
+        const form = new FormData();
 
-      // === DATA DASAR JEMAAT ===
-      form.append("namaLengkap", formData.namaLengkap || "");
-      form.append("nik", formData.nik || "");
-      form.append("alamat", formData.alamat || "");
-      form.append("tempatLahir", formData.tempatLahir || "");
-      form.append("tanggalLahir", formData.tanggalLahir || "");
-      form.append("jenisKelamin", formData.jenisKelamin || "");
-      form.append("agama", formData.agama || "");
-      form.append("golonganDarah", formData.golonganDarah || "");
-      form.append("nomorTelepon", formData.nomorTelepon || "");
-      form.append("pepanthan", formData.pepanthan || "");
-      form.append("statusNikah", formData.statusNikah || "");
-      form.append("statusSidi", formData.statusSidi || "");
-      form.append("statusBaptis", formData.statusBaptis || "");
-      form.append("statusJemaat", formData.statusJemaat || "");
-      form.append("namaPekerjaan", formData.namaPekerjaan || "");
-      form.append("jabatan", formData.jabatan || "");
-      form.append("namaPelayanan", formData.namaPelayanan || ""); // Hanya string
+        // === DATA DASAR JEMAAT ===
+        form.append("namaLengkap", formData.namaLengkap || "");
+        form.append("nik", formData.nik || "");
+        form.append("alamat", formData.alamat || "");
+        form.append("tempatLahir", formData.tempatLahir || "");
+        form.append("tanggalLahir", formData.tanggalLahir || "");
+        form.append("jenisKelamin", formData.jenisKelamin || "");
+        form.append("agama", formData.agama || "");
+        form.append("golonganDarah", formData.golonganDarah || "");
+        form.append("nomorTelepon", formData.nomorTelepon || "");
+        form.append("pepanthan", formData.pepanthan || "");
+        form.append("statusNikah", formData.statusNikah || "");
+        form.append("statusSidi", formData.statusSidi || "");
+        form.append("statusBaptis", formData.statusBaptis || "");
+        
+        // Data Pekerjaan
+        form.append("namaPekerjaan", formData.namaPekerjaan || "");
+        form.append("jabatan", formData.jabatan || ""); // Jabatan Pekerjaan
+        form.append("namaPelayanan", formData.namaPelayanan || ""); 
 
-      // === FOTO JEMAAT ===
-      if (formData.foto instanceof File) {
-        form.append("foto", formData.foto);
-      }
+        // File Foto
+        if (formData.foto instanceof File) {
+            form.append("foto", formData.foto);
+        }
 
-      // === SERTIFIKAT ===
-      if (formData.dataNikah?.sertifikat instanceof File) {
-        form.append("sertifikatNikah", formData.dataNikah.sertifikat);
-      }
-      if (formData.dataSidi?.sertifikat instanceof File) {
-        form.append("sertifikatSidi", formData.dataSidi.sertifikat);
-      }
-      if (formData.dataBaptis?.sertifikat instanceof File) {
-        form.append("sertifikatBaptis", formData.dataBaptis.sertifikat);
-      }
-      if (formData.dataPendeta?.sertifikat instanceof File) {
-        form.append("sertifikatKependetaan", formData.dataPendeta.sertifikat);
-      }
+        // === DATA PENDETA/RIWAYAT (Payload ke /api/pendeta) ===
+        if (isPendeta) {
+            // ✅ Menggunakan dataPendeta untuk jabatan spesifik
+            form.append("jabatanPendeta", formData.dataPendeta?.jabatan || ""); 
+            
+            // Sertifikat Pendeta
+            if (formData.dataPendeta?.sertifikat instanceof File) {
+                form.append("sertifikatPendeta", formData.dataPendeta.sertifikat);
+            }
+            // Riwayat Pelayanan Dinamis
+            if (formData.dataPelayananList && formData.dataPelayananList.length > 0) {
+                // Backend akan parse field ini
+                form.append("dataPelayananList", JSON.stringify(formData.dataPelayananList));
+            }
+        }
 
-      // === PENDIDIKAN DINAMIS ===
-      if (formData.pendidikan && formData.pendidikan.length > 0) {
-        form.append("pendidikan", JSON.stringify(formData.pendidikan));
-      }
+        // === SERTIFIKAT LAIN & PENDIDIKAN (Payload untuk kedua endpoint) ===
+        // Sertifikat Nikah/Sidi/Baptis
+        if (!isPendeta || step === 3) {
+            if (formData.dataNikah?.sertifikat instanceof File) { form.append("sertifikatNikah", formData.dataNikah.sertifikat); }
+            if (formData.dataSidi?.sertifikat instanceof File) { form.append("sertifikatSidi", formData.dataSidi.sertifikat); }
+            if (formData.dataBaptis?.sertifikat instanceof File) { form.append("sertifikatBaptis", formData.dataBaptis.sertifikat); }
+        }
 
-      // === RIWAYAT PELAYANAN DINAMIS ===
-      if (formData.dataPelayananList && formData.dataPelayananList.length > 0) {
-        form.append("dataPelayananList", JSON.stringify(formData.dataPelayananList));
-      }
+        // Pendidikan Dinamis
+        if (formData.pendidikan && formData.pendidikan.length > 0) {
+            // Backend akan parse field ini
+            form.append("pendidikan", JSON.stringify(formData.pendidikan));
+        }
 
-      // Kirim ke backend
-      const res = await fetch("http://localhost:5000/api/jemaat", {
-        method: "POST",
-        body: form,
-      });
+        // Kirim ke backend
+        const res = await fetch(apiEndpoint, {
+            method: "POST",
+            body: form,
+        });
 
-      const data = await res.json();
+        const data = await res.json();
 
-      if (res.ok) {
-        alert(data.message || "Data jemaat berhasil ditambahkan!");
-        navigate("/data");
-      } else {
-        alert(data.message || "Gagal menambahkan data jemaat");
-        console.error(data);
-      }
+        if (res.ok) {
+            alert(data.message || "Data jemaat berhasil ditambahkan!");
+            navigate("/data");
+        } else {
+            alert(data.message || "Gagal menambahkan data jemaat. Cek log server.");
+            console.error(data);
+        }
     } catch (error) {
-      console.error("Error submit:", error);
-      alert("Terjadi kesalahan saat mengirim data.");
+        console.error("Error submit:", error);
+        alert("Terjadi kesalahan saat mengirim data.");
     }
-  };
+};
 
 
   // === PENDIDIKAN DINAMIS ===
@@ -564,11 +575,11 @@ const HalamanTambahDataBaru = () => {
                 </div>
 
                 <div className="col-md-6">
-                  <label className="form-label">Status Jemaat</label>
+                  <label className="form-label">Status Pelayanan</label>
                   <select
-                    name="statusJemaat"   // ini ganti
+                    name="namaPelayanan"   // ini ganti
                     className="form-select mb-3"
-                    value={formData.statusJemaat}
+                    value={formData.namaPelayanan}
                     onChange={handleChange}
                   >
                     <option value="">-- Pilih --</option>
@@ -603,7 +614,7 @@ const HalamanTambahDataBaru = () => {
           )}
 
           {/* STEP 2 */}
-          {step === 2 && formData.statusJemaat === "Pendeta" && (
+          {step === 2 && formData.namaPelayanan === "Pendeta" && (
             <form onSubmit={handleNextAfterPelayanan}>
               <h4 className="mb-3 text-center">Form Data Pelayanan GKJ Wates Selatan</h4>
 
@@ -613,15 +624,18 @@ const HalamanTambahDataBaru = () => {
                   <label className="form-label">Sertifikat Pendeta</label>
                   <input
                     type="file"
-                    name="sertifikatKependetaan"
+                    name="sertifikatPendeta"
                     accept="image/*,application/pdf"
                     className="form-control"
                     onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        dataPendeta: { sertifikat: e.target.files[0] },
-                      })
-                    }
+                      setFormData((prevFormData) => ({ // 🔥 PERBAIKAN: Gunakan prevFormData
+                        ...prevFormData,
+                        dataPendeta: {
+                            ...prevFormData.dataPendeta, // <- Mempertahankan data 'jabatan'
+                            sertifikat: e.target.files[0],
+                        },
+                      }))
+                    }
                   />
                   {formData.dataPendeta?.sertifikat && (
                     <p className="mt-1">{formData.dataPendeta.sertifikat.name}</p>
@@ -632,9 +646,9 @@ const HalamanTambahDataBaru = () => {
                 <div className="col-md-4 mb-3">
                   <label className="form-label">Jabatan</label>
                   <select
-                    name="dataPelayanan.jabatan"
+                    name="dataPendeta.jabatan"
                     className="form-select mb-3"
-                    value={formData.dataPelayanan?.jabatan || ""}
+                    value={formData.dataPendeta?.jabatan || ""}
                     onChange={handleChange}
                   >
                     <option value="">-- Pilih Jabatan --</option>

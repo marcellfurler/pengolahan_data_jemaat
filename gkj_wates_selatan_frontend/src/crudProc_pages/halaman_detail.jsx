@@ -1,9 +1,13 @@
 import React from 'react';
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPencilAlt, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import logoGKJ from '../assets/logoGKJ.png';
 import { NavbarComponent } from '../components/NavbarComponent';
+import axios from 'axios';
+
+
+
 
 // -----------------------------
 // 🌟 DETAIL ITEM COMPONENT
@@ -19,10 +23,13 @@ const DetailListItem = ({ label, value }) => (
   </li>
 );
 
+
+
 // -----------------------------
 // 🌟 DETAIL PAGE COMPONENT
 // -----------------------------
 const DetailJemaat = ({ data }) => {
+  const navigate = useNavigate();
   const dataPribadi = [
     { label: 'NIK', value: data.NIK || '-' },
     { label: 'Nama Lengkap', value: data.namaLengkap || '-' },
@@ -57,6 +64,19 @@ const DetailJemaat = ({ data }) => {
     { label: 'Status Pelayanan', value: data.namaPelayanan || '-' },
   ];
 
+    const handleHapus = async (nik) => {
+      if (!window.confirm("Apakah Anda yakin ingin menghapus jemaat ini?")) return;
+
+      try {
+        const response = await axios.delete(`http://localhost:5000/api/jemaat/hapus/${nik}`);
+        alert(response.data.message);
+        navigate("/data"); // ✅ kembali ke daftar jemaat
+      } catch (error) {
+        console.error("Error hapus jemaat:", error);
+        alert("Gagal menghapus jemaat!");
+      }
+    };
+
   return (
     <div className="container mt-4 mb-5">
       <div className="card shadow-sm border-0 overflow-hidden">
@@ -84,16 +104,30 @@ const DetailJemaat = ({ data }) => {
           {/* Judul Tengah */}
           <h5 className="mb-0 fw-bold text-center flex-grow-1">BIODATA JEMAAT</h5>
 
-          {/* Tombol Edit di kanan */}
-          <Link
-            to="/edit"
-            state={{ data }} // ✅ kirim seluruh data jemaat ke halaman edit
-            className="btn btn-light btn-sm fw-bold position-absolute end-0 me-3"
-            style={{ color: "#004d97" }}
-            title="Edit Data"
-          >
-            <FontAwesomeIcon icon={faPencilAlt} className="me-1" /> Edit
-          </Link>
+          {/* Tombol Edit & Hapus di kanan, berdampingan */}
+          <div className="position-absolute end-0 me-3 d-flex gap-2"> {/* 💡 TAMBAHKAN d-flex dan gap-2 */}
+              {/* TOMBOL EDIT */}
+              <Link
+                  to="/edit"
+                  state={{ data }}
+                  // Kelas sudah benar: btn btn-light btn-sm fw-bold
+                  className="btn btn-light btn-sm fw-bold" 
+                  style={{ color: "#004d97" }}
+                  title="Edit Data"
+              >
+                  <FontAwesomeIcon icon={faPencilAlt} className="me-1" /> Edit
+              </Link>
+
+              {/* TOMBOL HAPUS */}
+              <button
+                  onClick={() => handleHapus(data.NIK)}
+                  // Kelas sudah benar: btn btn-danger btn-sm fw-bold
+                  className="btn btn-danger btn-sm fw-bold" 
+                  title="Hapus Data"
+              >
+                  Hapus
+              </button>
+          </div>
         </div>
 
         {/* BODY CARD */}
